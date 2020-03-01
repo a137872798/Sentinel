@@ -12,6 +12,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  *
  * @author Carpenter Lee
  * @since 1.6.1
+ * 统计接口 外部可以实现该类 并配合SPI 机制被加载
  */
 public interface MetricExtension {
 

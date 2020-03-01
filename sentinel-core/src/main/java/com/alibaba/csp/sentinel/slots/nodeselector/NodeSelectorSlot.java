@@ -121,6 +121,7 @@ import java.util.Map;
  * @author jialiang.linjl
  * @see EntranceNode
  * @see ContextUtil
+ * 节点选择器
  */
 public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
@@ -153,6 +154,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
         DefaultNode node = map.get(context.getName());
         if (node == null) {
             synchronized (this) {
+                // 先添加映射关系
                 node = map.get(context.getName());
                 if (node == null) {
                     node = new DefaultNode(resourceWrapper, null);
@@ -160,13 +162,14 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
                     cacheMap.putAll(map);
                     cacheMap.put(context.getName(), node);
                     map = cacheMap;
-                    // Build invocation tree
+                    // Build invocation tree  把当前节点添加到了上下文的末尾
                     ((DefaultNode) context.getLastNode()).addChild(node);
                 }
 
             }
         }
 
+        // 更新当前节点
         context.setCurNode(node);
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }

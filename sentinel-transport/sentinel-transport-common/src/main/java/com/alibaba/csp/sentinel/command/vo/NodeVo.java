@@ -53,6 +53,7 @@ public class NodeVo {
      * @param node     the DefaultNode to be presented.
      * @param parentId random generated parent node id, may be a random UUID
      * @return node view object.
+     * 根据传入的节点信息 生成 Vo对象
      */
     public static NodeVo fromDefaultNode(DefaultNode node, String parentId) {
         if (node == null) {

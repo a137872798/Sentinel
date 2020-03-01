@@ -46,6 +46,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 统计相关的槽
  */
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
@@ -54,9 +55,11 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                       boolean prioritized, Object... args) throws Throwable {
         try {
             // Do some checking.
+            // 先走后面的流程 之后开始统计数据
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
 
             // Request passed, add thread count and pass count.
+            // 增加当前线程数 已经成功的请求数
             node.increaseThreadNum();
             node.addPassRequest(count);
 
@@ -73,10 +76,12 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             }
 
             // Handle pass event with registered entry callback handlers.
+            // 触发相应的拓展对象
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
         } catch (PriorityWaitException ex) {
+            // 代表在DefaultController 上等待了一定时间  此时没有增加 passRequest 和 blockQPS 等指标
             node.increaseThreadNum();
             if (context.getCurEntry().getOriginNode() != null) {
                 // Add count for origin node.
@@ -133,6 +138,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         DefaultNode node = (DefaultNode)context.getCurNode();
 
+        // 退出时统计吞吐量 以及减少线程数
         if (context.getCurEntry().getError() == null) {
             // Calculate response time (max RT is statisticMaxRt from SentinelConfig).
             long rt = TimeUtil.currentTimeMillis() - context.getCurEntry().getCreateTime();

@@ -135,9 +135,13 @@ import com.alibaba.csp.sentinel.util.function.Function;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 限流槽
  */
 public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
+    /**
+     * 检测的逻辑委托给checker 对象
+     */
     private final FlowRuleChecker checker;
 
     public FlowSlot() {
@@ -173,6 +177,9 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         fireExit(context, resourceWrapper, count, args);
     }
 
+    /**
+     * 返回某一资源对应的一组规则
+     */
     private final Function<String, Collection<FlowRule>> ruleProvider = new Function<String, Collection<FlowRule>>() {
         @Override
         public Collection<FlowRule> apply(String resource) {

@@ -18,6 +18,7 @@ public class MetricExitCallback implements ProcessorSlotExitCallback {
     public void onExit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         for (MetricExtension m : MetricExtensionProvider.getMetricExtensions()) {
             if (context.getCurEntry().getError() == null) {
+                // 正常退出时同时增加 RT Success 减少 ThreadNum
                 long realRt = TimeUtil.currentTimeMillis() - context.getCurEntry().getCreateTime();
                 m.addRt(resourceWrapper.getName(), realRt, args);
                 m.addSuccess(resourceWrapper.getName(), count, args);

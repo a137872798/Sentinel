@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.property.SimplePropertyListener;
  * @author jialiang.linjl
  * @author Carpenter Lee
  * @since 1.5.0
+ * 辅助类
  */
 public class OccupyTimeoutProperty {
 
@@ -36,6 +37,7 @@ public class OccupyTimeoutProperty {
      * </p>
      * DO NOT MODIFY this value directly, use {@link #updateTimeout(int)},
      * otherwise the modification will not take effect.
+     * 默认的阻塞时间
      */
     private static volatile int occupyTimeout = 500;
 

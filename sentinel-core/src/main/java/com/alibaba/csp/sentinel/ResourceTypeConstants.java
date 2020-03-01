@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel;
 /**
  * @author Eric Zhao
  * @since 1.7.0
+ * 代表资源类型类型
  */
 public final class ResourceTypeConstants {
 

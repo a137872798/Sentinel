@@ -21,8 +21,15 @@ import java.util.Set;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 
+/**
+ * sentinel动态属性 可以添加监听器对象以监听属性的变动
+ * @param <T>
+ */
 public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
 
+    /**
+     * 一组监听属性变动的监听器
+     */
     protected Set<PropertyListener<T>> listeners = Collections.synchronizedSet(new HashSet<PropertyListener<T>>());
     private T value = null;
 
@@ -34,6 +41,10 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
         this.value = value;
     }
 
+    /**
+     * 添加一组监听器对象 并用当前属性的value 去触发回调
+     * @param listener listener to add.
+     */
     @Override
     public void addListener(PropertyListener<T> listener) {
         listeners.add(listener);
@@ -45,6 +56,11 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
         listeners.remove(listener);
     }
 
+    /**
+     * 当成功更换属性的时候 触发监听器
+     * @param newValue the new value.
+     * @return
+     */
     @Override
     public boolean updateValue(T newValue) {
         if (isEqual(value, newValue)) {

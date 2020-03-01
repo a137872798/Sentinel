@@ -40,10 +40,14 @@ import org.apache.http.impl.client.HttpClients;
 /**
  * @author Eric Zhao
  * @author leyou
+ * 基于netty的心跳发送器
  */
 @SpiOrder(SpiOrder.LOWEST_PRECEDENCE - 100)
 public class HttpHeartbeatSender implements HeartbeatSender {
 
+    /**
+     * 这是 apache  封装好的httpClient 就是能将数据包装成符合http协议的格式
+     */
     private final CloseableHttpClient client;
 
     private final int timeoutMs = 3000;
@@ -58,10 +62,12 @@ public class HttpHeartbeatSender implements HeartbeatSender {
 
     public HttpHeartbeatSender() {
         this.client = HttpClients.createDefault();
+        // 获取所有 dashboard的地址
         List<Tuple2<String, Integer>> dashboardList = parseDashboardList();
         if (dashboardList == null || dashboardList.isEmpty()) {
             RecordLog.info("[NettyHttpHeartbeatSender] No dashboard available");
         } else {
+            // 这里只取了第一个dashboard 的地址
             consoleHost = dashboardList.get(0).r1;
             consolePort = dashboardList.get(0).r2;
             RecordLog.info("[NettyHttpHeartbeatSender] Dashboard address parsed: <" + consoleHost + ':' + consolePort + ">");
@@ -102,11 +108,17 @@ public class HttpHeartbeatSender implements HeartbeatSender {
         return list;
     }
 
+    /**
+     * 发送心跳请求
+     * @return
+     * @throws Exception
+     */
     @Override
     public boolean sendHeartbeat() throws Exception {
         if (StringUtil.isEmpty(consoleHost)) {
             return false;
         }
+        // 这个用了apache的客户端就不细看了 反正就是定时往dashboard 发一个请求 只要确保没有抛出异常则看作成功
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setScheme("http").setHost(consoleHost).setPort(consolePort)
             .setPath(TransportConfig.getHeartbeatApiPath())

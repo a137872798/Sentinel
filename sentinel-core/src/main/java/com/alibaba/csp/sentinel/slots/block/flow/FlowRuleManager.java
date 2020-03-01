@@ -43,6 +43,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 包含所有 资源以及规则的映射关系
  */
 public class FlowRuleManager {
 
@@ -57,6 +58,7 @@ public class FlowRuleManager {
 
     static {
         currentProperty.addListener(LISTENER);
+        // 定时获取所有node信息 并写入到文件中
         SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, 1, TimeUnit.SECONDS);
     }
 
@@ -80,6 +82,7 @@ public class FlowRuleManager {
      * Get a copy of the rules.
      *
      * @return a new copy of the rules.
+     * 获取当前所有规则  并且获取到的是一个快照
      */
     public static List<FlowRule> getRules() {
         List<FlowRule> rules = new ArrayList<FlowRule>();

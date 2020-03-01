@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.util.SpiLoader;
 /**
  * @author Eric Zhao
  * @since 1.6.0
+ * 通过SPI机制加载 发送心跳包的实现类
  */
 public final class HeartbeatSenderProvider {
 

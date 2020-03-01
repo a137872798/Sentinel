@@ -24,13 +24,15 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  *
  * @author Eric Zhao
  * @since 0.2.0
+ * 权限检查
  */
 final class AuthorityRuleChecker {
 
     static boolean passCheck(AuthorityRule rule, Context context) {
+        // 发起申请的资源
         String requester = context.getOrigin();
 
-        // Empty origin or empty limitApp will pass.
+        // Empty origin or empty limitApp will pass. 没有设置资源信息 或者 limitApp信息的直接返回true
         if (StringUtil.isEmpty(requester) || StringUtil.isEmpty(rule.getLimitApp())) {
             return true;
         }
@@ -39,6 +41,7 @@ final class AuthorityRuleChecker {
         int pos = rule.getLimitApp().indexOf(requester);
         boolean contain = pos > -1;
 
+        // 如果limitApp 信息与资源名称有关
         if (contain) {
             boolean exactlyMatch = false;
             String[] appArray = rule.getLimitApp().split(",");
@@ -53,6 +56,7 @@ final class AuthorityRuleChecker {
         }
 
         int strategy = rule.getStrategy();
+        // 这里根据权限策略类型 以及 limitApp中是否包含资源信息 来确定是否满足条件
         if (strategy == RuleConstant.AUTHORITY_BLACK && contain) {
             return false;
         }

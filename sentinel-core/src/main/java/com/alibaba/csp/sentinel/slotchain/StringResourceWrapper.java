@@ -34,6 +34,10 @@ public class StringResourceWrapper extends ResourceWrapper {
         super(name, e, resType);
     }
 
+    /**
+     * 直接返回资源名称
+     * @return
+     */
     @Override
     public String getShowName() {
         return name;

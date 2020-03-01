@@ -11,6 +11,7 @@ import com.alibaba.csp.sentinel.util.SpiLoader;
  *
  * @author Carpenter Lee
  * @since 1.6.1
+ * 通过SPI 机制加载所有统计功能
  */
 public class MetricExtensionProvider {
     private static List<MetricExtension> metricExtensions = new ArrayList<>();

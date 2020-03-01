@@ -27,6 +27,7 @@ import com.alibaba.fastjson.JSONObject;
 
 /**
  * @author jialiang.linjl
+ * 返回当前系统状态信息
  */
 @CommandMapping(name = "systemStatus", desc = "get system status")
 public class FetchSystemStatusCommandHandler implements CommandHandler<String> {

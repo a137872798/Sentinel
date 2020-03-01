@@ -35,12 +35,19 @@ import com.alibaba.csp.sentinel.transport.CommandCenter;
 @SpiOrder(SpiOrder.LOWEST_PRECEDENCE - 100)
 public class NettyHttpCommandCenter implements CommandCenter {
 
+    /**
+     * 基于netty.channel 实现的服务器
+     */
     private final HttpServer server = new HttpServer();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private final ExecutorService pool = Executors.newSingleThreadExecutor(
         new NamedThreadFactory("sentinel-netty-command-center-executor"));
 
+    /**
+     * 使用一个额外的线程 异步启动服务器
+     * @throws Exception
+     */
     @Override
     public void start() throws Exception {
         pool.submit(new Runnable() {

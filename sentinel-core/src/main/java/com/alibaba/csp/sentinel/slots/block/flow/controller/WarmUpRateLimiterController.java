@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 /**
  * @author jialiang.linjl
  * @since 1.4.0
+ * 2个WarmUp的先不看了
  */
 public class WarmUpRateLimiterController extends WarmUpController {
 

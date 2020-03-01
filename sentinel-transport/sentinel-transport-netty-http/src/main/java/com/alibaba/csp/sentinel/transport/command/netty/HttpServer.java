@@ -43,8 +43,15 @@ public final class HttpServer {
 
     private Channel channel;
 
+    /**
+     * 维护了请求 与对应处理器的映射关系
+     */
     final static Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
 
+    /**
+     * netty的标准模板
+     * @throws Exception
+     */
     public void start() throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -70,6 +77,7 @@ public final class HttpServer {
             ChannelFuture channelFuture = null;
             // loop for an successful binding
             while (true) {
+                // 绑定失败的情况会尝试更换port
                 int newPort = getNewPort(port, retryCount);
                 try {
                     channelFuture = b.bind(newPort).sync();

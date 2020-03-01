@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
  *
  * @param <R> source type
  * @author Eric Zhao
+ * 编码器接口
  */
 public interface Encoder<R> {
 
@@ -30,6 +31,7 @@ public interface Encoder<R> {
      *
      * @param clazz type of the class
      * @return {@code true} if supported, {@code false} otherwise
+     * 判断是否支持编码
      */
     boolean canEncode(Class<?> clazz);
 

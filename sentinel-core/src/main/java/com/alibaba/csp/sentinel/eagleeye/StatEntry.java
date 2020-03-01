@@ -18,6 +18,9 @@ package com.alibaba.csp.sentinel.eagleeye;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 统计数据的基础块
+ */
 public final class StatEntry {
 
     private final StatLogger statLogger;

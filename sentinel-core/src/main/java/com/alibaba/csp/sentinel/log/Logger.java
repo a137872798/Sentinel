@@ -23,6 +23,7 @@ package com.alibaba.csp.sentinel.log;
  * So, if you're not using slf4j, you should create adapters compatible with placeholders "{}".
  *
  * @author xue8
+ * sentinel 有内置的日志接口
  */
 public interface Logger {
     /**

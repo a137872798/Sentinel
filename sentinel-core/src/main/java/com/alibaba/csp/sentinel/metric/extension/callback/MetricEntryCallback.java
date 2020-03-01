@@ -13,6 +13,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  *
  * @author Carpenter Lee
  * @since 1.6.1
+ * 处理node 时的钩子 就是用于统计数据的
  */
 public class MetricEntryCallback implements ProcessorSlotEntryCallback<DefaultNode> {
     @Override

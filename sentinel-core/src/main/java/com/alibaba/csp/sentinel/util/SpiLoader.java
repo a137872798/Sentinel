@@ -29,6 +29,8 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * SPI 加载工具
+ * 拓展于  JDK 实现 而非自己实现
  */
 public final class SpiLoader {
 

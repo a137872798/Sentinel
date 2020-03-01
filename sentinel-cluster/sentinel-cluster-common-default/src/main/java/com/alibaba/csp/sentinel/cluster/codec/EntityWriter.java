@@ -22,6 +22,7 @@ package com.alibaba.csp.sentinel.cluster.codec;
  * @param <T> target stream type
  * @author Eric Zhao
  * @since 1.4.0
+ * 将数据写入到指定的流中
  */
 public interface EntityWriter<E, T> {
 

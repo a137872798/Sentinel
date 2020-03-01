@@ -23,6 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * @author Eric Zhao
+ * 用于表示 initFunc 的init() 方法启动顺序
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

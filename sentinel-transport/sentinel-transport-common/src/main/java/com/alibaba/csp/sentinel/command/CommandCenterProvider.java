@@ -34,6 +34,7 @@ public final class CommandCenterProvider {
     }
 
     private static void resolveInstance() {
+        // 通过SPI 机制加载命令中心
         CommandCenter resolveCommandCenter = SpiLoader.loadHighestPriorityInstance(CommandCenter.class);
 
         if (resolveCommandCenter == null) {

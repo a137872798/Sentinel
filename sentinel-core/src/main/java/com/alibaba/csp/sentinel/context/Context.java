@@ -53,21 +53,25 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * @author Eric Zhao
  * @see ContextUtil
  * @see NodeSelectorSlot
+ * 在调用某个资源的过程中使用的上下文对象
  */
 public class Context {
 
     /**
      * Context name.
+     * 上下文的名称
      */
     private final String name;
 
     /**
      * The entrance node of current invocation tree.
+     * 该上下文关联的 入口节点
      */
     private DefaultNode entranceNode;
 
     /**
      * Current processing entry.
+     * 当前正在处理的entry
      */
     private Entry curEntry;
 
@@ -76,6 +80,9 @@ public class Context {
      */
     private String origin = "";
 
+    /**
+     * 本上下文是否处在异步环境
+     */
     private final boolean async;
 
     /**
@@ -121,6 +128,11 @@ public class Context {
         return curEntry;
     }
 
+    /**
+     * 修改当前curEntry
+     * @param curEntry
+     * @return
+     */
     public Context setCurEntry(Entry curEntry) {
         this.curEntry = curEntry;
         return this;

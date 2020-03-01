@@ -42,6 +42,7 @@ import java.io.File;
  *
  * @author Eric Zhao
  * @author leyou
+ * 从系统中获取app名称
  */
 public final class AppNameUtil {
 

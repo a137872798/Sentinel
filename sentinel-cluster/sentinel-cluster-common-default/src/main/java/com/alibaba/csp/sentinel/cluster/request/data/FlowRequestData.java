@@ -18,10 +18,17 @@ package com.alibaba.csp.sentinel.cluster.request.data;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 请求携带的数据体
  */
 public class FlowRequestData {
 
+    /**
+     * 全局范围内资源的限流id
+     */
     private long flowId;
+    /**
+     * 本次请求的token数
+     */
     private int count;
     private boolean priority;
 

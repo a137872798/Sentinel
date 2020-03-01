@@ -22,6 +22,7 @@ import java.util.logging.LogRecord;
 
 /**
  * @author xuyue
+ * 将日志格式化输出
  */
 class CspFormatter extends Formatter {
 

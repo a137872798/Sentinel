@@ -36,9 +36,18 @@ public class MetricSearcher {
     private static final Charset defaultCharset = Charset.forName(SentinelConfig.charset());
     private final MetricsReader metricsReader;
 
+    /**
+     * 定位到 metric文件
+     */
     private String baseDir;
+    /**
+     * 定位到天
+     */
     private String baseFileName;
 
+    /**
+     * 记录内部偏移量相关的信息
+     */
     private Position lastPosition = new Position();
 
     /**
@@ -82,6 +91,7 @@ public class MetricSearcher {
      * @throws Exception
      */
     public synchronized List<MetricNode> find(long beginTimeMs, int recommendLines) throws Exception {
+        // 找到目标目录下所有文件
         List<String> fileNames = MetricWriter.listMetricFiles(baseDir, baseFileName);
         int i = 0;
         long offsetInIndex = 0;
@@ -117,6 +127,7 @@ public class MetricSearcher {
         //    + "], " + identity + ")");
         int i = 0;
         long offsetInIndex = 0;
+        // 代表当前传入时间刚好契合于lastPosition
         if (validPosition(beginTimeMs)) {
             i = fileNames.indexOf(lastPosition.metricFileName);
             if (i == -1) {
@@ -128,8 +139,10 @@ public class MetricSearcher {
             //RecordLog.info("lastPosition is invalidate, will re iterate all files, pid = " + pid);
         }
 
+        // 如果position 是有效的 那么直接从该位置开始读取file  否则i是0 代表从头开始
         for (; i < fileNames.size(); i++) {
             String fileName = fileNames.get(i);
+            // 定位到metric文件的偏移量 (通过借助index文件)
             long offset = findOffset(beginTimeMs, fileName,
                     MetricWriter.formIndexFileName(fileName), offsetInIndex);
             offsetInIndex = 0;
@@ -159,6 +172,7 @@ public class MetricSearcher {
     /**
      * The position we cached is useful only when {@code beginTimeMs} is >= {@code lastPosition.second}
      * and the index file exists and the second we cached is same as in the index file.
+     * 判断传入的 时间是否正好对应lastPosition
      */
     private boolean validPosition(long beginTimeMs) {
         if (beginTimeMs / 1000 < lastPosition.second) {
@@ -190,6 +204,15 @@ public class MetricSearcher {
         }
     }
 
+    /**
+     * 通过index文件 查询metric 文件对应时间的 偏移量
+     * @param beginTime
+     * @param metricFileName
+     * @param idxFileName
+     * @param offsetInIndex
+     * @return
+     * @throws Exception
+     */
     private long findOffset(long beginTime, String metricFileName,
                             String idxFileName, long offsetInIndex) throws Exception {
         lastPosition.metricFileName = null;
@@ -204,12 +227,15 @@ public class MetricSearcher {
         long offset;
         try {
             long second;
+            // 代表从上次的位置开始 直到读取到当前传入的时间
             lastPosition.offsetInIndex = in.getChannel().position();
             while ((second = indexIn.readLong()) < beginSecond) {
                 offset = indexIn.readLong();
                 lastPosition.offsetInIndex = in.getChannel().position();
             }
+            // 获取 metric下文件的偏移量
             offset = indexIn.readLong();
+            // 同时更新lastPosition 相关信息
             lastPosition.metricFileName = metricFileName;
             lastPosition.indexFileName = idxFileName;
             lastPosition.second = second;

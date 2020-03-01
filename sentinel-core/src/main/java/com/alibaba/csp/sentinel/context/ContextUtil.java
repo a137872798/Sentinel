@@ -46,11 +46,14 @@ public class ContextUtil {
 
     /**
      * Store the context in ThreadLocal for easy access.
+     * context 是绑定在线程上的  一般的web框架是走到servlet那层后 在线程上绑定context 之后在处理完servlet后 解放掉context 之后接收下一个应用服务器(tomcat)
+     * 的数据流后(req) 再一次进入servlet并绑定新的context
      */
     private static ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
     /**
      * Holds all {@link EntranceNode}. Each {@link EntranceNode} is associated with a distinct context name.
+     * 上下文以及当前上下文直接绑定的node (子级node)
      */
     private static volatile Map<String, DefaultNode> contextNameNodeMap = new HashMap<>();
 
@@ -62,9 +65,13 @@ public class ContextUtil {
         initDefaultContext();
     }
 
+    /**
+     * 该对象在惰性加载时 会先初始化Root Context
+     */
     private static void initDefaultContext() {
         String defaultContextName = Constants.CONTEXT_DEFAULT_NAME;
         EntranceNode node = new EntranceNode(new StringResourceWrapper(defaultContextName, EntryType.IN), null);
+        // 该节点会添加到 Root 下
         Constants.ROOT.addChild(node);
         contextNameNodeMap.put(defaultContextName, node);
     }
@@ -119,10 +126,13 @@ public class ContextUtil {
 
     protected static Context trueEnter(String name, String origin) {
         Context context = contextHolder.get();
+        // 如果当前线程没有绑定context
         if (context == null) {
             Map<String, DefaultNode> localCacheNameMap = contextNameNodeMap;
+            // 查看是否存在映射
             DefaultNode node = localCacheNameMap.get(name);
             if (node == null) {
+                // 此时map中映射关系过多 无法添加  将ThreadLocal 中的context 设置成NullContext
                 if (localCacheNameMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
                     setNullContext();
                     return NULL_CONTEXT;
@@ -135,8 +145,9 @@ public class ContextUtil {
                                 setNullContext();
                                 return NULL_CONTEXT;
                             } else {
+                                // 添加新的映射关系
                                 node = new EntranceNode(new StringResourceWrapper(name, EntryType.IN), null);
-                                // Add entrance node.
+                                // Add entrance node.  直接添加到Root
                                 Constants.ROOT.addChild(node);
 
                                 Map<String, DefaultNode> newMap = new HashMap<>(contextNameNodeMap.size() + 1);
@@ -155,9 +166,13 @@ public class ContextUtil {
             contextHolder.set(context);
         }
 
+        // 如果当前线程绑定了上下文 那么直接返回上下文
         return context;
     }
 
+    /**
+     * 当映射容器中内容过多时 是否应该警告
+     */
     private static boolean shouldWarn = true;
 
     private static void setNullContext() {
@@ -188,6 +203,7 @@ public class ContextUtil {
      *
      * @param name the context name
      * @return The invocation context of the current thread
+     * entry 时就是在map 中添加一组映射关系  同时为ThreadLocal设置context
      */
     public static Context enter(String name) {
         return enter(name, "");
@@ -196,6 +212,7 @@ public class ContextUtil {
     /**
      * Exit context of current thread, that is removing {@link Context} in the
      * ThreadLocal.
+     * 退出就是将ThreadLocal的 context 置空
      */
     public static void exit() {
         Context context = contextHolder.get();
@@ -251,6 +268,7 @@ public class ContextUtil {
      * @param newContext new context to set
      * @return old context
      * @since 0.2.0
+     * 替换当前线程绑定的context
      */
     static Context replaceContext(Context newContext) {
         Context backupContext = contextHolder.get();
@@ -269,6 +287,7 @@ public class ContextUtil {
      * @param context the context
      * @param f       lambda to run within the context
      * @since 0.2.0
+     * 强行更换 ThreadLocal 绑定的context
      */
     public static void runOnContext(Context context, Runnable f) {
         Context curContext = replaceContext(context);

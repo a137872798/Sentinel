@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.cluster;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 请求token 相关的状态码
  */
 public final class TokenResultStatus {
 

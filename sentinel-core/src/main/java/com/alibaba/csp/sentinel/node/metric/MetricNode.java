@@ -24,9 +24,13 @@ import java.util.Date;
  *
  * @author jialiang.linjl
  * @author Carpenter Lee
+ * 就是将统计数据以一个bean的形式封装起来 应该是为了解耦吧
  */
 public class MetricNode {
 
+    /**
+     * 该统计数据是针对哪个资源的
+     */
     private String resource;
     /**
      * Resource classification (e.g. SQL or RPC)
@@ -34,7 +38,12 @@ public class MetricNode {
      */
     private int classification;
 
+    /**
+     *
+     */
     private long timestamp;
+
+    // 这些数据从MetricBucket中获取
     private long passQps;
     private long blockQps;
     private long successQps;
@@ -209,6 +218,7 @@ public class MetricNode {
      * </code>
      *
      * @return string format of this.
+     * 将内部信息格式化输出
      */
     public String toFatString() {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -226,6 +236,7 @@ public class MetricNode {
         sb.append(getOccupiedPassQps()).append("|");
         sb.append(concurrency).append("|");
         sb.append(classification);
+        // 注意最后的换行符
         sb.append('\n');
         return sb.toString();
     }

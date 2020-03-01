@@ -19,6 +19,7 @@ package com.alibaba.csp.sentinel.transport.command.codec;
  * Caches default encoders and decoders.
  *
  * @author Eric Zhao
+ * 默认的编解码器
  */
 final class DefaultCodecs {
 

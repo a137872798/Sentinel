@@ -40,9 +40,13 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  * @author youji.zj
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 管理断路的全局容器
  */
 public final class DegradeRuleManager {
 
+    /**
+     * 同样一个资源可以被多个断路规则所限制
+     */
     private static final Map<String, Set<DegradeRule>> degradeRules = new ConcurrentHashMap<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
@@ -69,6 +73,14 @@ public final class DegradeRuleManager {
         }
     }
 
+    /**
+     * 这里相当于就是checker的功能
+     * @param resource
+     * @param context
+     * @param node
+     * @param count
+     * @throws BlockException
+     */
     public static void checkDegrade(ResourceWrapper resource, Context context, DefaultNode node, int count)
         throws BlockException {
 
@@ -211,12 +223,15 @@ public final class DegradeRuleManager {
         if (!baseValid) {
             return false;
         }
+        // 允许的最大吞吐量  (一旦超过这个值就要开始断路了)
         int maxAllowedRt = SentinelConfig.statisticMaxRt();
+        // 如果检测类型是吞吐量  那么必须要设置合理的 RtSlowRequestAmount
         if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_RT) {
             if (rule.getRtSlowRequestAmount() <= 0) {
                 return false;
             }
             // Warn for RT mode that exceeds the {@code TIME_DROP_VALVE}.
+            // 规则制定的值不能比系统级别的最大吞吐量还高
             if (rule.getCount() > maxAllowedRt) {
                 RecordLog.warn(String.format("[DegradeRuleManager] WARN: setting large RT threshold (%.1f ms)"
                         + " in RT mode will not take effect since it exceeds the max allowed value (%d ms)",
@@ -225,6 +240,7 @@ public final class DegradeRuleManager {
         }
 
         // Check exception ratio mode.
+        // 如果是失败比率 那么 rule不能大于1
         if (rule.getGrade() == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
             return rule.getCount() <= 1 && rule.getMinRequestAmount() > 0;
         }

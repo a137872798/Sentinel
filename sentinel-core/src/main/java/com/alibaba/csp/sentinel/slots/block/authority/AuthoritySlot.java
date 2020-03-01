@@ -29,13 +29,26 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  *
  * @author leyou
  * @author Eric Zhao
+ * 处理槽
  */
 public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
+    /**
+     *
+     * @param context         current {@link Context}
+     * @param resourceWrapper current resource
+     * @param node
+     * @param count           tokens needed
+     * @param prioritized     whether the entry is prioritized
+     * @param args            parameters of the original call
+     * @throws Throwable
+     */
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
         throws Throwable {
+        // 本节点的处理逻辑
         checkBlackWhiteAuthority(resourceWrapper, context);
+        // 同时不忘了触发下一个slot的逻辑
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
@@ -44,6 +57,13 @@ public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         fireExit(context, resourceWrapper, count, args);
     }
 
+    /**
+     * 从manager中找到资源匹配的rule 并检测是否满足权限条件
+     * 注意这里一个resource 可以对应多个authorityRule
+     * @param resource
+     * @param context
+     * @throws AuthorityException
+     */
     void checkBlackWhiteAuthority(ResourceWrapper resource, Context context) throws AuthorityException {
         Map<String, Set<AuthorityRule>> authorityRules = AuthorityRuleManager.getAuthorityRules();
 

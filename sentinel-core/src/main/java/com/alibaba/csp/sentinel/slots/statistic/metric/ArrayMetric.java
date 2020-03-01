@@ -32,9 +32,14 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 内部包含一个 bucket结构 用于存放统计数据
  */
 public class ArrayMetric implements Metric {
 
+    /**
+     * 每个metricBucket 内部都包含了一组统计事件 以及对应的值
+     * 同时 leapArray是一个基于时间窗口的对象
+     */
     private final LeapArray<MetricBucket> data;
 
     public ArrayMetric(int sampleCount, int intervalInMs) {
@@ -45,6 +50,7 @@ public class ArrayMetric implements Metric {
         if (enableOccupy) {
             this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
         } else {
+            // 该对象是最基本的实现
             this.data = new BucketLeapArray(sampleCount, intervalInMs);
         }
     }
@@ -56,11 +62,17 @@ public class ArrayMetric implements Metric {
         this.data = array;
     }
 
+    /**
+     * 获取当前成功的总数
+     * @return
+     */
     @Override
     public long success() {
+        // 主要是用于惰性创建当前时间对应的时间窗口 或者 清理旧的时间窗口
         data.currentWindow();
         long success = 0;
 
+        // 当前时间肯定是最新的时间 那么就是返回从当前时间起往前数 intervalInMs 长度的所有数据
         List<MetricBucket> list = data.values();
         for (MetricBucket window : list) {
             success += window.success();
@@ -68,6 +80,10 @@ public class ArrayMetric implements Metric {
         return success;
     }
 
+    /**
+     * 从一个 intervalInMs 长度的所有数据中找到某个窗口对应的最大成功数
+     * @return
+     */
     @Override
     public long maxSuccess() {
         data.currentWindow();
@@ -109,7 +125,6 @@ public class ArrayMetric implements Metric {
         data.currentWindow();
         long pass = 0;
         List<MetricBucket> list = data.values();
-
         for (MetricBucket window : list) {
             pass += window.pass();
         }
@@ -152,6 +167,8 @@ public class ArrayMetric implements Metric {
         return Math.max(1, rt);
     }
 
+    // 注意下面返回的对象是 MetricNode
+
     @Override
     public List<MetricNode> details() {
         List<MetricNode> details = new ArrayList<>();
@@ -187,6 +204,11 @@ public class ArrayMetric implements Metric {
         return details;
     }
 
+    /**
+     * 将bucket内部的数据 转换成 MetricNode
+     * @param wrap
+     * @return
+     */
     private MetricNode fromBucket(WindowWrap<MetricBucket> wrap) {
         MetricNode node = new MetricNode();
         node.setBlockQps(wrap.value().block());
@@ -255,6 +277,8 @@ public class ArrayMetric implements Metric {
     public void debug() {
         data.debug(System.currentTimeMillis());
     }
+
+    // 返回上一个窗口的相关信息
 
     @Override
     public long previousWindowBlock() {

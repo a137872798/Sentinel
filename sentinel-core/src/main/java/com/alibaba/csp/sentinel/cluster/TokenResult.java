@@ -22,14 +22,27 @@ import java.util.Map;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 某次申请获取token 的结果
  */
 public class TokenResult {
 
+    /**
+     * 返回的状态码
+     */
     private Integer status;
 
+    /**
+     * 还剩余多少token
+     */
     private int remaining;
+    /**
+     * 应该是没有拿到token 还需要等待多少时间 对应 StatisticNode
+     */
     private int waitInMs;
 
+    /**
+     * 携带的一组额外信息
+     */
     private Map<String, String> attachments;
 
     public TokenResult() {}

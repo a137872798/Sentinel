@@ -32,7 +32,13 @@ public class DefaultController implements TrafficShapingController {
 
     private static final int DEFAULT_AVG_USED_TOKENS = 0;
 
+    /**
+     * 阈值
+     */
     private double count;
+    /**
+     * 指标类型     qps/threads
+     */
     private int grade;
 
     public DefaultController(double count, int grade) {
@@ -45,24 +51,38 @@ public class DefaultController implements TrafficShapingController {
         return canPass(node, acquireCount, false);
     }
 
+    /**
+     * 判断某个节点是否需要被限流
+     * @param node resource node
+     * @param acquireCount count to acquire   本次请求获取的token数量
+     * @param prioritized whether the request is prioritized
+     * @return
+     */
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        // 根据指标返回对应的数据类型
         int curCount = avgUsedTokens(node);
+        // 本次请求的量 会使得超过阈值
         if (curCount + acquireCount > count) {
+            // 如果本次优先级很高  并且是基于QPS 的
             if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
                 long currentTime;
                 long waitInMs;
                 currentTime = TimeUtil.currentTimeMillis();
+                // 计算要等待多久才能申请到足够的token
                 waitInMs = node.tryOccupyNext(currentTime, acquireCount, count);
                 if (waitInMs < OccupyTimeoutProperty.getOccupyTimeout()) {
+                    // 添加一个等待中的请求
                     node.addWaitingRequest(currentTime + waitInMs, acquireCount);
                     node.addOccupiedPass(acquireCount);
+                    // 沉睡规定的时间
                     sleep(waitInMs);
 
                     // PriorityWaitException indicates that the request will pass after waiting for {@link @waitInMs}.
                     throw new PriorityWaitException(waitInMs);
                 }
             }
+            // 如果要等待的时间过长 那么也返回false
             return false;
         }
         return true;

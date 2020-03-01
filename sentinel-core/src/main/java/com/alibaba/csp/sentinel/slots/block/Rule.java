@@ -22,17 +22,18 @@ import com.alibaba.csp.sentinel.node.DefaultNode;
  * Base interface of all rules.
  *
  * @author youji.zj
+ * 该对象用于检测本次请求是否应该被限流
  */
 public interface Rule {
 
     /**
      * Check whether current statistical indicators meet this rule, which means not exceeding any threshold.
      *
-     * @param context current {@link Context}
-     * @param node    current {@link com.alibaba.csp.sentinel.node.Node}
-     * @param count   tokens needed.
-     * @param args    arguments of the original invocation.
-     * @return If current statistical indicators not exceeding any threshold return true, otherwise return false.
+     * @param context current {@link Context}   本次资源相关的context
+     * @param node    current {@link com.alibaba.csp.sentinel.node.Node}   当前资源相关的node
+     * @param count   tokens needed. 需要多少token
+     * @param args    arguments of the original invocation.  其他相关参数
+     * @return If current statistical indicators not exceeding any threshold return true, otherwise return false. 是否需要被限流
      */
     boolean passCheck(Context context, DefaultNode node, int count, Object... args);
 

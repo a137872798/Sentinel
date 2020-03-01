@@ -41,6 +41,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  *
  * @author qinan.qn
  * @author jialiang.linjl
+ * StatisticNode 就是基于时间窗口统计数据的
  */
 public class ClusterNode extends StatisticNode {
 
@@ -64,6 +65,7 @@ public class ClusterNode extends StatisticNode {
      * So we didn't use concurrent map here, but a lock, as this lock only happens
      * at the very beginning while concurrent map will hold the lock all the time.
      * </p>
+     * key 对应一个资源名 value 对应该资源的统计信息
      */
     private Map<String, StatisticNode> originCountMap = new HashMap<>();
 
@@ -97,6 +99,7 @@ public class ClusterNode extends StatisticNode {
      * @param origin The caller's name, which is designated in the {@code parameter} parameter
      *               {@link ContextUtil#enter(String name, String origin)}.
      * @return the {@link Node} of the specific origin
+     * 添加映射关系
      */
     public Node getOrCreateOriginNode(String origin) {
         StatisticNode statisticNode = originCountMap.get(origin);
@@ -106,6 +109,7 @@ public class ClusterNode extends StatisticNode {
                 statisticNode = originCountMap.get(origin);
                 if (statisticNode == null) {
                     // The node is absent, create a new node for the origin.
+                    // 这个copyOnWrite 的套路跟kafka 一样  不过为什么不考虑使用ConcurrentHashMap呢
                     statisticNode = new StatisticNode();
                     HashMap<String, StatisticNode> newMap = new HashMap<>(originCountMap.size() + 1);
                     newMap.putAll(originCountMap);

@@ -27,6 +27,7 @@ import com.alibaba.csp.sentinel.spi.ServiceLoaderUtil;
  * Load registered init functions and execute in order.
  *
  * @author Eric Zhao
+ * 初始化执行器
  */
 public final class InitExecutor {
 
@@ -43,12 +44,14 @@ public final class InitExecutor {
             return;
         }
         try {
+            // 通过spi机制加载初始化函数
             ServiceLoader<InitFunc> loader = ServiceLoaderUtil.getServiceLoader(InitFunc.class);
             List<OrderWrapper> initList = new ArrayList<OrderWrapper>();
             for (InitFunc initFunc : loader) {
                 RecordLog.info("[InitExecutor] Found init func: " + initFunc.getClass().getCanonicalName());
                 insertSorted(initList, initFunc);
             }
+            // 挨个调用init  方法
             for (OrderWrapper w : initList) {
                 w.func.init();
                 RecordLog.info(String.format("[InitExecutor] Executing %s with order %d",
@@ -63,6 +66,11 @@ public final class InitExecutor {
         }
     }
 
+    /**
+     * 将SPI 实现类 按照上面的注解顺序添加到 list 中
+     * @param list
+     * @param func
+     */
     private static void insertSorted(List<OrderWrapper> list, InitFunc func) {
         int order = resolveOrder(func);
         int idx = 0;
@@ -74,6 +82,11 @@ public final class InitExecutor {
         list.add(idx, new OrderWrapper(order, func));
     }
 
+    /**
+     * 解析实现类上的顺序
+     * @param func
+     * @return
+     */
     private static int resolveOrder(InitFunc func) {
         if (!func.getClass().isAnnotationPresent(InitOrder.class)) {
             return InitOrder.LOWEST_PRECEDENCE;

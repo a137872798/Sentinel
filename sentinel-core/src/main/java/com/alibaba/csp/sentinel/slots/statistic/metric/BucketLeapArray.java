@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
  * @author jialiang.linjl
  * @author Eric Zhao
  * @see LeapArray
+ * 最基础的实现
  */
 public class BucketLeapArray extends LeapArray<MetricBucket> {
 

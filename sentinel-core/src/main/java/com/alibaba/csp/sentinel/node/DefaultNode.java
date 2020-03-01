@@ -37,24 +37,33 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  *
  * @author qinan.qn
  * @see NodeSelectorSlot
+ * 一个默认的节点对象 继承自StatisticNode 代表具备最基本的统计能力
  */
 public class DefaultNode extends StatisticNode {
 
     /**
      * The resource associated with the node.
+     * 某个资源被包装后  资源以2种形式存在 可以是method 也可以是 string
      */
     private ResourceWrapper id;
 
     /**
      * The list of all child nodes.
+     * 获取该node下所有的子node
      */
     private volatile Set<Node> childList = new HashSet<>();
 
     /**
      * Associated cluster node.
+     * 该node 关联到集群中哪个node
      */
     private ClusterNode clusterNode;
 
+    /**
+     * 初始化的时候 直接传入 clusterNode
+     * @param id
+     * @param clusterNode
+     */
     public DefaultNode(ResourceWrapper id, ClusterNode clusterNode) {
         this.id = id;
         this.clusterNode = clusterNode;
@@ -76,6 +85,7 @@ public class DefaultNode extends StatisticNode {
      * Add child node to current node.
      *
      * @param node valid child node
+     *             为该node对象增加子节点
      */
     public void addChild(Node node) {
         if (node == null) {
@@ -84,6 +94,7 @@ public class DefaultNode extends StatisticNode {
         }
         if (!childList.contains(node)) {
             synchronized (this) {
+                // 类似于 copyOnWrite 的思路 就是拷贝一个副本 这样不会影响childList的读取速度
                 if (!childList.contains(node)) {
                     Set<Node> newSet = new HashSet<>(childList.size() + 1);
                     newSet.addAll(childList);
@@ -97,6 +108,7 @@ public class DefaultNode extends StatisticNode {
 
     /**
      * Reset the child node list.
+     * 这样旧的childList 就会被GC 回收
      */
     public void removeChildList() {
         this.childList = new HashSet<>();
@@ -106,6 +118,10 @@ public class DefaultNode extends StatisticNode {
         return childList;
     }
 
+    /**
+     * 增加对应的指标  该对象实现这类方法的方式就是在父类基础上 同时对clusterNode统一修改
+     * @param count
+     */
     @Override
     public void increaseBlockQps(int count) {
         super.increaseBlockQps(count);
@@ -142,10 +158,17 @@ public class DefaultNode extends StatisticNode {
         this.clusterNode.addPassRequest(count);
     }
 
+    /**
+     * 打印当前节点的信息
+     */
     public void printDefaultNode() {
         visitTree(0, this);
     }
 
+    /**
+     * @param level
+     * @param node  以哪个节点为起点
+     */
     private void visitTree(int level, DefaultNode node) {
         for (int i = 0; i < level; ++i) {
             System.out.print("-");
@@ -156,11 +179,18 @@ public class DefaultNode extends StatisticNode {
                     node.curThreadNum(), node.passQps(), node.blockQps(), node.totalQps(), node.avgRt(),
                     node.totalRequest() - node.blockRequest(), node.blockRequest(), node.totalRequest()));
         } else {
+            // 先打印本节点的信息
             System.out.println(
                 String.format("Entry-%s(t:%s pq:%s bq:%s tq:%s rt:%s 1mp:%s 1mb:%s 1mt:%s)", node.id.getShowName(),
                     node.curThreadNum(), node.passQps(), node.blockQps(), node.totalQps(), node.avgRt(),
                     node.totalRequest() - node.blockRequest(), node.blockRequest(), node.totalRequest()));
         }
+        // 遍历子节点依次打印信息 注意这里是递归的
+        // -****
+        // --****
+        // ---*****
+        // --****
+        // ---****   横杠数量代表深度
         for (Node n : node.getChildList()) {
             DefaultNode dn = (DefaultNode)n;
             visitTree(level + 1, dn);

@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 统计数据接口 继承 debugSupport
  */
 public interface Metric extends DebugSupport {
 
@@ -33,6 +34,7 @@ public interface Metric extends DebugSupport {
      * Get total success count.
      *
      * @return success count
+     * 记录成功总数
      */
     long success();
 

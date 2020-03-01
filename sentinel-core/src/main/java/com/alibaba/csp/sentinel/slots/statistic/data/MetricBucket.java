@@ -24,14 +24,23 @@ import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 表示某一时间端的统计数量
  */
 public class MetricBucket {
 
+    /**
+     * LongAdder 就是一个以多槽的方式累加数据的AtomicLong
+     * 这里每个LongAdder 对应一种统计事件
+     */
     private final LongAdder[] counters;
 
+    /**
+     * 最小的响应时间  该值在初始化的时候以最大的响应事件作为基础值
+     */
     private volatile long minRt;
 
     public MetricBucket() {
+        // 返回当前所有的统计事件
         MetricEvent[] events = MetricEvent.values();
         this.counters = new LongAdder[events.length];
         for (MetricEvent event : events) {
@@ -40,6 +49,11 @@ public class MetricBucket {
         initMinRt();
     }
 
+    /**
+     * 用另一个bucket的数据来修改该对象内部的数据
+     * @param bucket
+     * @return
+     */
     public MetricBucket reset(MetricBucket bucket) {
         for (MetricEvent event : MetricEvent.values()) {
             counters[event.ordinal()].reset();
@@ -49,7 +63,11 @@ public class MetricBucket {
         return this;
     }
 
+    /**
+     * 初始化最小响应时间
+     */
     private void initMinRt() {
+        // 从配置文件中获取最大响应时间  这里赋值到minRT 上
         this.minRt = SentinelConfig.statisticMaxRt();
     }
 
@@ -66,10 +84,21 @@ public class MetricBucket {
         return this;
     }
 
+    /**
+     * 获取某一种统计事件的总值
+     * @param event
+     * @return
+     */
     public long get(MetricEvent event) {
         return counters[event.ordinal()].sum();
     }
 
+    /**
+     * 为某个事件增加统计值
+     * @param event
+     * @param n
+     * @return
+     */
     public MetricBucket add(MetricEvent event, long n) {
         counters[event.ordinal()].add(n);
         return this;

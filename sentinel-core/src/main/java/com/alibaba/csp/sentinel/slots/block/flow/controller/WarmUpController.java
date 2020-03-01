@@ -60,16 +60,26 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
  * </p>
  *
  * @author jialiang.linjl
+ * 暖机控制器
  */
 public class WarmUpController implements TrafficShapingController {
 
     protected double count;
+    /**
+     * 应该是超过这个 比率就代表暖机成功了吧
+     */
     private int coldFactor;
     protected int warningToken = 0;
     private int maxToken;
     protected double slope;
 
+    /**
+     * 当前存储的token
+     */
     protected AtomicLong storedTokens = new AtomicLong(0);
+    /**
+     * 上一次充满token的时间
+     */
     protected AtomicLong lastFilledTime = new AtomicLong(0);
 
     public WarmUpController(double count, int warmUpPeriodInSec, int coldFactor) {
@@ -80,6 +90,12 @@ public class WarmUpController implements TrafficShapingController {
         construct(count, warmUpPeriodInSec, 3);
     }
 
+    /**
+     * 根据参数进行初始化
+     * @param count
+     * @param warmUpPeriodInSec
+     * @param coldFactor
+     */
     private void construct(double count, int warmUpPeriodInSec, int coldFactor) {
 
         if (coldFactor <= 1) {

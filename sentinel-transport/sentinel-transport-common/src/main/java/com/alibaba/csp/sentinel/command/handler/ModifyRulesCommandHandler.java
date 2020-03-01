@@ -40,6 +40,7 @@ import static com.alibaba.csp.sentinel.transport.util.WritableDataSourceRegistry
 /**
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 为集群模式 的中心节点设置规则
  */
 @CommandMapping(name = "setRules", desc = "modify the rules, accept param: type={ruleType}&data={ruleJson}")
 public class ModifyRulesCommandHandler implements CommandHandler<String> {
@@ -62,6 +63,7 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
 
         String result = "success";
 
+        // 根据type 找到要修改的rules    之后反序列化并添加到manager 中  注意这里是全量更新 而非增量更新
         if (FLOW_RULE_TYPE.equalsIgnoreCase(type)) {
             List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
             FlowRuleManager.loadRules(flowRules);
@@ -101,6 +103,7 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
      * @param value target value to save
      * @param <T> value type
      * @return true if write successful or data source is empty; false if error occurs
+     * 这里还会将改动写入数据源  应该是为了持久化
      */
     private <T> boolean writeToDataSource(WritableDataSource<T> dataSource, T value) {
         if (dataSource != null) {

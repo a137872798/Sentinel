@@ -25,6 +25,10 @@ import java.lang.annotation.*;
 @Documented
 public @interface CommandMapping {
 
+    /**
+     * 代表支持处理的命令
+     * @return
+     */
     String name();
 
     /**
@@ -32,6 +36,7 @@ public @interface CommandMapping {
      *
      * @return brief description of the command
      * @since 1.5.0
+     * command的描述信息
      */
     String desc();
 }

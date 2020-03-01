@@ -34,27 +34,32 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 限流规则
  */
 public class FlowRule extends AbstractRule {
 
     public FlowRule() {
         super();
+        // 默认情况设置的 限流应用为 default
         setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
     }
 
     public FlowRule(String resourceName) {
         super();
+        // 指定了该规则是针对哪个资源的
         setResource(resourceName);
         setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
     }
 
     /**
      * The threshold type of flow control (0: thread count, 1: QPS).
+     * 限制的类别  通过线程数 或者qps
      */
     private int grade = RuleConstant.FLOW_GRADE_QPS;
 
     /**
      * Flow control threshold count.
+     * 阈值
      */
     private double count;
 
@@ -64,11 +69,13 @@ public class FlowRule extends AbstractRule {
      * {@link RuleConstant#STRATEGY_DIRECT} for direct flow control (by origin);
      * {@link RuleConstant#STRATEGY_RELATE} for relevant flow control (with relevant resource);
      * {@link RuleConstant#STRATEGY_CHAIN} for chain flow control (by entrance resource).
+     * 默认的策略是直接策略
      */
     private int strategy = RuleConstant.STRATEGY_DIRECT;
 
     /**
      * Reference resource in flow control with relevant resource or context.
+     * 引用的资源
      */
     private String refResource;
 
@@ -85,14 +92,19 @@ public class FlowRule extends AbstractRule {
      */
     private int maxQueueingTimeMs = 500;
 
+    /**
+     * 当前是否采用集群模式
+     */
     private boolean clusterMode;
     /**
      * Flow rule config for cluster mode.
+     * 本规则集群模式相关的配置
      */
     private ClusterFlowConfig clusterConfig;
 
     /**
      * The traffic shaping (throttling) controller.
+     * 流量形状控制器 内部有多种实现 用于判断某个请求 能否申请足够的token
      */
     private TrafficShapingController controller;
 

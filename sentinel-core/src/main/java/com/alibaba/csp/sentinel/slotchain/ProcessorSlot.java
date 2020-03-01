@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.context.Context;
  * @author jialiang.linjl
  * @author leyou(lihao)
  * @author Eric Zhao
+ * 处理链对象 应该就是在该对象中做了各种统计工作
  */
 public interface ProcessorSlot<T> {
 

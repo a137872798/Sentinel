@@ -24,6 +24,8 @@ import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
  *
  * @author jialiang.linjl
  * @since 1.5.0
+ * OccupiableBucketLeapArray 对象内部包含一个该对象 addWaiting currentWaiting 都会经过该对象
+ * 这里的override 都是最基础的实现
  */
 public class FutureBucketLeapArray extends LeapArray<MetricBucket> {
 

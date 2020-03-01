@@ -20,10 +20,17 @@ import com.alibaba.csp.sentinel.node.IntervalProperty;
 /**
  * @author youji.zj
  * @author jialiang.linjl
+ * 一些规则相关的常量信息
  */
 public final class RuleConstant {
 
+    /**
+     * 当线程数超过一定量时 阻断新的请求
+     */
     public static final int FLOW_GRADE_THREAD = 0;
+    /**
+     * 按照qps 作为阻断指标
+     */
     public static final int FLOW_GRADE_QPS = 1;
 
     public static final int DEGRADE_GRADE_RT = 0;
@@ -39,9 +46,13 @@ public final class RuleConstant {
     public static final int DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT = 5;
     public static final int DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT = 5;
 
+    /**
+     * 尝试使用某个资源时  对应的权限策略
+     */
     public static final int AUTHORITY_WHITE = 0;
     public static final int AUTHORITY_BLACK = 1;
 
+    // 几种策略类别
     public static final int STRATEGY_DIRECT = 0;
     public static final int STRATEGY_RELATE = 1;
     public static final int STRATEGY_CHAIN = 2;

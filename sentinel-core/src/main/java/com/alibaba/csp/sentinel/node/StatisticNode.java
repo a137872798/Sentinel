@@ -86,12 +86,15 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author qinan.qn
  * @author jialiang.linjl
+ * 节点具备的基础功能就是统计功能
  */
 public class StatisticNode implements Node {
 
     /**
      * Holds statistics of the recent {@code INTERVAL} seconds. The {@code INTERVAL} is divided into time spans
      * by given {@code sampleCount}.
+     * ArrayMetric 该对象实际上就是 LeapArray的包装对象
+     * 默认情况下生成2个窗口 并且所有窗口总长度是1秒
      */
     private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
@@ -99,16 +102,19 @@ public class StatisticNode implements Node {
     /**
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
      * meaning each bucket per second, in this way we can get accurate statistics of each second.
+     * 以分钟为单位的统计对象 内部每个窗口的长度为1秒
      */
     private transient Metric rollingCounterInMinute = new ArrayMetric(60, 60 * 1000, false);
 
     /**
      * The counter for thread count.
+     * 记录当前线程数量的对象也是 LongAdder  看来已经默认该对象会被高并发访问了
      */
     private LongAdder curThreadNum = new LongAdder();
 
     /**
      * The last timestamp when metrics were fetched.
+     * 上一次拉取统计数据的时间
      */
     private long lastFetchTime = -1;
 
@@ -118,11 +124,14 @@ public class StatisticNode implements Node {
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;
         Map<Long, MetricNode> metrics = new ConcurrentHashMap<>();
+        // 将内部统计数据转换成 MetricNode 并返回
         List<MetricNode> nodesOfEverySecond = rollingCounterInMinute.details();
         long newLastFetchTime = lastFetchTime;
         // Iterate metrics of all resources, filter valid metrics (not-empty and up-to-date).
+        // 内部的每个node 都对应某一秒
         for (MetricNode node : nodesOfEverySecond) {
             if (isNodeInTime(node, currentTime) && isValidMetricNode(node)) {
+                // node.getTimestamp() 对应窗口的 start时间
                 metrics.put(node.getTimestamp(), node);
                 newLastFetchTime = Math.max(newLastFetchTime, node.getTimestamp());
             }
@@ -132,6 +141,11 @@ public class StatisticNode implements Node {
         return metrics;
     }
 
+    /**
+     * 根据谓语条件筛选node
+     * @param timePredicate time predicate
+     * @return
+     */
     @Override
     public List<MetricNode> rawMetricsInMin(Predicate<Long> timePredicate) {
         return rollingCounterInMinute.detailsOnCondition(timePredicate);
@@ -151,6 +165,10 @@ public class StatisticNode implements Node {
         rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
     }
 
+    /**
+     * 所有的请求数包含 pass 和 block
+     * @return
+     */
     @Override
     public long totalRequest() {
         return rollingCounterInMinute.pass() + rollingCounterInMinute.block();
@@ -229,6 +247,7 @@ public class StatisticNode implements Node {
             return 0;
         }
 
+        // 总响应时间/总成功数   (只有成功的请求才会记录响应时间)
         return rollingCounterInSecond.rt() * 1.0 / successCount;
     }
 
@@ -284,15 +303,29 @@ public class StatisticNode implements Node {
         rollingCounterInSecond.debug();
     }
 
+    /**
+     * 尝试申请多少个门票
+     * @param currentTime  current time millis.
+     * @param acquireCount tokens count to acquire.
+     * @param threshold    qps threshold.
+     * @return  返回结果为推荐阻塞的时长
+     */
     @Override
     public long tryOccupyNext(long currentTime, int acquireCount, double threshold) {
+        // 相当于是去尾法
         double maxCount = threshold * IntervalProperty.INTERVAL / 1000;
+        // 计算 OccupiableBucketLeapArray 的pass 总和
         long currentBorrow = rollingCounterInSecond.waiting();
+        // 代表达到了阈值 无法申请到token
         if (currentBorrow >= maxCount) {
+            // 推荐沉睡500毫秒
             return OccupyTimeoutProperty.getOccupyTimeout();
         }
 
+        // 以500毫秒作为时间单位   刚好对应了rollingCounterInSecond 也是2个窗口 每个500毫秒
         int windowLength = IntervalProperty.INTERVAL / SampleCountProperty.SAMPLE_COUNT;
+        // currentTime - currentTime % windowLength  这一部分会得到一个 刚好能被windowLength整除的 currentTime
+        // - IntervalProperty.INTERVAL 代表回到上一轮  + windowLength 代表指向上一轮第一个窗口
         long earliestTime = currentTime - currentTime % windowLength + windowLength - IntervalProperty.INTERVAL;
 
         int idx = 0;
@@ -300,18 +333,29 @@ public class StatisticNode implements Node {
          * Note: here {@code currentPass} may be less than it really is NOW, because time difference
          * since call rollingCounterInSecond.pass(). So in high concurrency, the following code may
          * lead more tokens be borrowed.
+         * 获取当前qps
          */
         long currentPass = rollingCounterInSecond.pass();
         while (earliestTime < currentTime) {
+            // 一开始的等待时间是在一个窗口范围内的  每进入下一轮 等待时间就要增加一个窗口 他的意思就是说因为每个窗口内的请求量都是不一样的 那么在
+            // 什么时候时某个窗口的请求量不是特别多 使得在整个滑动窗口中加上本次申请的量能够在 maxCount的限制内
+            // 第一次的waitInMs 代表从当前时间开始 经过这么久后刚好进入到一个新的窗口
             long waitInMs = idx * windowLength + windowLength - currentTime % windowLength;
             if (waitInMs >= OccupyTimeoutProperty.getOccupyTimeout()) {
                 break;
             }
+            // 获取 第一个窗口的pass数量  (在整个滑动窗口中)
             long windowPass = rollingCounterInSecond.getWindowPass(earliestTime);
-            if (currentPass + currentBorrow + acquireCount - windowPass <= maxCount) {
+            // currentPass + currentBorrow 这个可以理解为真正的pass数
+            // 因为在经过waitInMs之后会进入到一个新的窗口 所以windowPass 实际上在过了这么久后不会算在maxCount的约束中
+            // 所以这里要减去windowPass 也就是当前滑动窗口内已经申请的总pass数 (currentPass + currentBorrow) 减去在等待waitInMs后即将从整个窗口离开的
+            // windowPass 后 再加上本次申请的acquireCount <=  总的阈值 maxCount 那么就认为本次是可以正常分配的
+             if (currentPass + currentBorrow + acquireCount - windowPass <= maxCount) {
                 return waitInMs;
             }
+            // 每次前进一个单位长度
             earliestTime += windowLength;
+            // 同时从总qps中减去对应窗口的pass数量
             currentPass -= windowPass;
             idx++;
         }

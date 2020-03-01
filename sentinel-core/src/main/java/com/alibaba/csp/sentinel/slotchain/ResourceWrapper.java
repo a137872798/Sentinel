@@ -24,11 +24,18 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  * @author qinan.qn
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 资源的包装对象
  */
 public abstract class ResourceWrapper {
 
+    /**
+     * 本资源的名称
+     */
     protected final String name;
 
+    /**
+     * IN/OUT 资源
+     */
     protected final EntryType entryType;
     protected final int resourceType;
 

@@ -24,11 +24,13 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  * Authority rule is designed for limiting by request origins.
  *
  * @author youji.zj
+ * 权限校验规则  也就是要使用某个资源前要先进行校验
  */
 public class AuthorityRule extends AbstractRule {
 
     /**
      * Mode: 0 for whitelist; 1 for blacklist.
+     * 白名单 或者 黑名单
      */
     private int strategy = RuleConstant.AUTHORITY_WHITE;
 
@@ -59,6 +61,14 @@ public class AuthorityRule extends AbstractRule {
         return result;
     }
 
+    /**
+     * 默认情况下 总是通过检查
+     * @param context current {@link Context}   本次资源相关的context
+     * @param node    current {@link com.alibaba.csp.sentinel.node.Node}   当前资源相关的node
+     * @param count   tokens needed. 需要多少token
+     * @param args    arguments of the original invocation.  其他相关参数
+     * @return
+     */
     @Override
     public boolean passCheck(Context context, DefaultNode node, int count, Object... args) {
         return true;

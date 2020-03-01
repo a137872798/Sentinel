@@ -20,9 +20,13 @@ import com.alibaba.csp.sentinel.context.Context;
 /**
  * @author qinan.qn
  * @author jialiang.linjl
+ * 处理链对象的实现类
  */
 public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
+    /**
+     * 头节点
+     */
     AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<Object>() {
 
         @Override
@@ -68,6 +72,8 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
     public AbstractLinkedProcessorSlot<?> getNext() {
         return first.getNext();
     }
+
+    // 传递处理逻辑
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args)

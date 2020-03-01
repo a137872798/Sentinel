@@ -29,6 +29,7 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  * @author qinan.qn
  * @author leyou
  * @author Eric Zhao
+ * 包含某个资源的实时统计数据
  */
 public interface Node extends OccupySupport, DebugSupport {
 
@@ -36,6 +37,7 @@ public interface Node extends OccupySupport, DebugSupport {
      * Get incoming request per minute ({@code pass + block}).
      *
      * @return total request count per minute
+     * 总请求量 (那么在集群环境下又是如何确保数据准确呢? 肯定不会加锁 不然效率很低 那么是使用快照的方式么)
      */
     long totalRequest();
 
@@ -44,6 +46,7 @@ public interface Node extends OccupySupport, DebugSupport {
      *
      * @return total passed request count per minute
      * @since 1.5.0
+     * 只记录pass的数量
      */
     long totalPass();
 
@@ -51,6 +54,7 @@ public interface Node extends OccupySupport, DebugSupport {
      * Get {@link Entry#exit()} count per minute.
      *
      * @return total completed request count per minute
+     * 只记录成功处理的数量
      */
     long totalSuccess();
 
@@ -58,6 +62,7 @@ public interface Node extends OccupySupport, DebugSupport {
      * Get blocked request count per minute (totalBlockRequest).
      *
      * @return total blocked request count per minute
+     * 获取该资源被阻塞的请求数量
      */
     long blockRequest();
 
@@ -65,6 +70,7 @@ public interface Node extends OccupySupport, DebugSupport {
      * Get exception count per minute.
      *
      * @return total business exception count per minute
+     * 总的异常次数
      */
     long totalException();
 
@@ -72,6 +78,7 @@ public interface Node extends OccupySupport, DebugSupport {
      * Get pass request per second.
      *
      * @return QPS of passed requests
+     * pass相关的qps
      */
     double passQps();
 
@@ -100,6 +107,7 @@ public interface Node extends OccupySupport, DebugSupport {
      * Get estimated max success QPS till now.
      *
      * @return max completed QPS
+     * 获取预估的最大成功qps  successQps() 相当于是平均值  这个是峰值
      */
     double maxSuccessQps();
 
@@ -114,6 +122,7 @@ public interface Node extends OccupySupport, DebugSupport {
      * Get average rt per second.
      *
      * @return average response time per second
+     * RT (响应时间)  这里代表平均响应时间
      */
     double avgRt();
 
@@ -128,11 +137,13 @@ public interface Node extends OccupySupport, DebugSupport {
      * Get current active thread count.
      *
      * @return current active thread count
+     * 当前线程数量 (应该是针对该资源)   想一下 如果是spring boot 那么客户端每发起一个请求会有一个线程专门处理servlet的逻辑 这个统计的就是那个线程???
      */
     int curThreadNum();
 
     /**
      * Get last second block QPS.
+     * 获取上一秒的 block qps
      */
     double previousBlockQps();
 
@@ -145,6 +156,7 @@ public interface Node extends OccupySupport, DebugSupport {
      * Fetch all valid metric nodes of resources.
      *
      * @return valid metric nodes of resources
+     * 获取所有统计信息
      */
     Map<Long, MetricNode> metrics();
 

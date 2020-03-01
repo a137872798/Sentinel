@@ -32,6 +32,7 @@ import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
  *
  * @author lianglin
  * @since 1.7.0
+ * 该对象用于从某个文件中读取prop
  */
 public final class SentinelConfigLoader {
 
@@ -67,6 +68,7 @@ public final class SentinelConfigLoader {
 
         // Compatible with legacy config file path.
         if (p == null) {
+            // 加上指定后缀后继续尝试读取配置
             String path = addSeparator(System.getProperty(USER_HOME)) + DIR_NAME + File.separator;
             fileName = path + AppNameUtil.getAppName() + ".properties";
             File file = new File(fileName);
@@ -80,6 +82,8 @@ public final class SentinelConfigLoader {
             properties.putAll(p);
         }
 
+
+        // 读取所有系统变量 便于之后在需要的地方获取
         for (Map.Entry<Object, Object> entry : new CopyOnWriteArraySet<>(System.getProperties().entrySet())) {
             String configKey = entry.getKey().toString();
             String newConfigValue = entry.getValue().toString();

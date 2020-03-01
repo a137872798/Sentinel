@@ -24,22 +24,30 @@ import java.util.List;
 
 /**
  * Reads metrics data from log file.
+ * 该对象负责从文件中读取统计数据
  */
 class MetricsReader {
 
     /**
      * Avoid OOM in any cases.
+     * 每次最多允许加载多少数据
      */
     private static final int MAX_LINES_RETURN = 100000;
 
     private final Charset charset;
 
+    /**
+     * 在 初始化reader对象时 只需要指定字符集就可以
+     * @param charset
+     */
     public MetricsReader(Charset charset) {
         this.charset = charset;
     }
 
     /**
+     * @param identity 代表只读取某些指定的resource
      * @return if should continue read, return true, else false.
+     * 从单个文件中根据 begin/end 时间来查询统计数据
      */
     boolean readMetricsInOneFileByEndTime(List<MetricNode> list, String fileName, long offset,
                                           long beginTimeMs, long endTimeMs, String identity) throws Exception {
@@ -47,17 +55,23 @@ class MetricsReader {
         long beginSecond = beginTimeMs / 1000;
         long endSecond = endTimeMs / 1000;
         try {
+            // 通过文件名定位到数据流
             in = new FileInputStream(fileName);
+            // 直接定位偏移量
             in.getChannel().position(offset);
+            // 根据字符集包装成reader 对象
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, charset));
             String line;
             while ((line = reader.readLine()) != null) {
+                // 按行读取数据 同时每行数据对应一个node
                 MetricNode node = MetricNode.fromFatString(line);
                 long currentSecond = node.getTimestamp() / 1000;
                 // currentSecond should >= beginSecond, otherwise a wrong metric file must occur
+                // 代表传入的起点时间有问题 直接返回false
                 if (currentSecond < beginSecond) {
                     return false;
                 }
+                // 正常情况下会将节点添加到list 中
                 if (currentSecond <= endSecond) {
                     // read all
                     if (identity == null) {
@@ -66,6 +80,7 @@ class MetricsReader {
                         list.add(node);
                     }
                 } else {
+                    // 不满足条件后 返回false  不过此时list内部已经有数据了
                     return false;
                 }
                 if (list.size() >= MAX_LINES_RETURN) {
@@ -80,12 +95,21 @@ class MetricsReader {
         return true;
     }
 
+    /**
+     * 从某个偏移量开始读取数据
+     * @param list
+     * @param fileName
+     * @param offset
+     * @param recommendLines
+     * @throws Exception
+     */
     void readMetricsInOneFile(List<MetricNode> list, String fileName,
                               long offset, int recommendLines) throws Exception {
         //if(list.size() >= recommendLines){
         //    return;
         //}
         long lastSecond = -1;
+        // 如果当前list 有数据 那么就从list内部的节点时间当前最后的时间点
         if (list.size() > 0) {
             lastSecond = list.get(list.size() - 1).getTimestamp() / 1000;
         }
@@ -99,8 +123,10 @@ class MetricsReader {
                 MetricNode node = MetricNode.fromFatString(line);
                 long currentSecond = node.getTimestamp() / 1000;
 
+                // 小于要求的数量时 可以直接添加到list 中
                 if (list.size() < recommendLines) {
                     list.add(node);
+                    // 时间相同时也可以直接添加  (同一批写入的node 使用同一个时间戳  并且同一批数据要满足原子性所以长度可能会超过recommendLines)
                 } else if (currentSecond == lastSecond) {
                     list.add(node);
                 } else {
@@ -118,10 +144,12 @@ class MetricsReader {
     /**
      * When identity is null, all metric between the time intervalMs will be read, otherwise, only the specific
      * identity will be read.
+     * 根据时间来读取node 数据
      */
     List<MetricNode> readMetricsByEndTime(List<String> fileNames, int pos, long offset,
                                           long beginTimeMs, long endTimeMs, String identity) throws Exception {
         List<MetricNode> list = new ArrayList<MetricNode>(1024);
+        // 返回true 代表可以继续读取数据
         if (readMetricsInOneFileByEndTime(list, fileNames.get(pos++), offset, beginTimeMs, endTimeMs, identity)) {
             while (pos < fileNames.size()
                 && readMetricsInOneFileByEndTime(list, fileNames.get(pos++), 0, beginTimeMs, endTimeMs, identity)) {

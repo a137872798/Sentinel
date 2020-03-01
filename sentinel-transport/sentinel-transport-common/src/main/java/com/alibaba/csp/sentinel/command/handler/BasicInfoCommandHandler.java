@@ -25,10 +25,12 @@ import com.alibaba.csp.sentinel.util.HostNameUtil;
  * The basic info command returns the runtime properties.
  *
  * @author Eric Zhao
+ * 获取基础信息的handler
  */
 @CommandMapping(name = "basicInfo", desc = "get sentinel config info")
 public class BasicInfoCommandHandler implements CommandHandler<String> {
 
+    // 返回主机和ip 信息
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
         return CommandResponse.ofSuccess(HostNameUtil.getConfigString());

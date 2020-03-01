@@ -20,6 +20,7 @@ package com.alibaba.csp.sentinel.datasource;
  *
  * @author Eric Zhao
  * @since 0.2.0
+ * 数据源接口 应该是为了将针对集群中心节点的改动持久化
  */
 public interface WritableDataSource<T> {
 

@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.cluster.response.Response;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 响应体写入接口
  */
 public interface ResponseEntityWriter<E extends Response, T> extends EntityWriter<E, T> {
 

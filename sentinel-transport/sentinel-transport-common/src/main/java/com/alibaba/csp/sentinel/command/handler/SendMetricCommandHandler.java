@@ -37,11 +37,15 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  *
  * @author leyou
  * @author Eric Zhao
+ * 请求体中携带时间信息 然后从本地的日志文件中找到对应数据 并返回
  */
 @CommandMapping(name = "metric", desc = "get and aggregate metrics, accept param: "
     + "startTime={startTime}&endTime={endTime}&maxLines={maxLines}&identify={resourceName}")
 public class SendMetricCommandHandler implements CommandHandler<String> {
 
+    /**
+     * 该对象用于快速查找测量数据
+     */
     private volatile MetricSearcher searcher;
 
     private final Object lock = new Object();
@@ -61,6 +65,7 @@ public class SendMetricCommandHandler implements CommandHandler<String> {
                 }
             }
         }
+        // 从请求体中获取查询需要的参数
         String startTimeStr = request.getParam("startTime");
         String endTimeStr = request.getParam("endTime");
         String maxLinesStr = request.getParam("maxLines");
@@ -77,8 +82,10 @@ public class SendMetricCommandHandler implements CommandHandler<String> {
             // Find by end time if set.
             if (StringUtil.isNotBlank(endTimeStr)) {
                 long endTime = Long.parseLong(endTimeStr);
+                // 查询时间段范围内的节点信息
                 list = searcher.findByTimeAndResource(startTime, endTime, identity);
             } else {
+                // 如果携带了查询的长度信息
                 if (StringUtil.isNotBlank(maxLinesStr)) {
                     maxLines = Integer.parseInt(maxLinesStr);
                 }
@@ -92,6 +99,7 @@ public class SendMetricCommandHandler implements CommandHandler<String> {
             list = new ArrayList<>();
         }
         if (StringUtil.isBlank(identity)) {
+            // 增加cpu相关的2个指标
             addCpuUsageAndLoad(list);
         }
         StringBuilder sb = new StringBuilder();

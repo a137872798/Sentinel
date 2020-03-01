@@ -15,6 +15,7 @@ import java.util.Random;
  * A package-local class holding common representation and mechanics
  * for classes supporting dynamic striping on 64bit values. The class
  * extends Number so that concrete subclasses must publicly do so.
+ * 该对象是用于解决缓存伪共享的  用于提交在并发场景修改某个字段的性能
  */
 abstract class Striped64 extends Number {
     /*
@@ -89,6 +90,7 @@ abstract class Striped64 extends Number {
      *
      * JVM intrinsics note: It would be possible to use a release-only
      * form of CAS here, if it were provided.
+     * 内部的每个值都使用了缓存行填充
      */
     static final class Cell {
         volatile long p0, p1, p2, p3, p4, p5, p6;
@@ -97,6 +99,7 @@ abstract class Striped64 extends Number {
 
         Cell(long x) { value = x; }
 
+        // 修改cell 内部的值
         final boolean cas(long cmp, long val) {
             return UNSAFE.compareAndSwapLong(this, valueOffset, cmp, val);
         }
@@ -121,6 +124,7 @@ abstract class Striped64 extends Number {
     /**
      * Holder for the thread-local hash code. The code is initially
      * random, but may be set to a different value upon collisions.
+     * 每个线程会专门保存一个hashCode
      */
     static final class HashCode {
         static final Random rng = new Random();
@@ -155,12 +159,14 @@ abstract class Striped64 extends Number {
 
     /**
      * Table of cells. When non-null, size is a power of 2.
+     * 该对象内部存放多少值 (每个值使用一个cell包装 这里看过去就是一个cell数组)
      */
     transient volatile Cell[] cells;
 
     /**
      * Base value, used mainly when there is no contention, but also as
      * a fallback during table initialization races. Updated via CAS.
+     * 基础值
      */
     transient volatile long base;
 
@@ -174,6 +180,8 @@ abstract class Striped64 extends Number {
      */
     Striped64() {
     }
+
+    // 通过cas方式修改 base 或者 busy
 
     /**
      * CASes the base field.
@@ -212,22 +220,30 @@ abstract class Striped64 extends Number {
      * @param wasUncontended false if CAS failed before call
      */
     final void retryUpdate(long x, HashCode hc, boolean wasUncontended) {
+        // 随机数
         int h = hc.code;
+        // 判断是否发生了碰撞
         boolean collide = false;                // True if last slot nonempty
         for (; ; ) {
             Cell[] as;
             Cell a;
             int n;
             long v;
+            // 首先确保 cells 不为空
             if ((as = cells) != null && (n = as.length) > 0) {
+                // 从后往前开始遍历cell      注意以h 作为底数
                 if ((a = as[(n - 1) & h]) == null) {
+                    // 当发现某个cell 还未设置时
                     if (busy == 0) {            // Try to attach new Cell
+                        // 将传入的x 设置成Cell 对象
                         Cell r = new Cell(x);   // Optimistically create
+                        // 尝试cas 操作
                         if (busy == 0 && casBusy()) {
                             boolean created = false;
                             try {               // Recheck under lock
                                 Cell[] rs;
                                 int m, j;
+                                // 这里重新读取一遍cells 应该是怕cells 已经发生变化  并填充cells
                                 if ((rs = cells) != null &&
                                     (m = rs.length) > 0 &&
                                     rs[j = (m - 1) & h] == null) {
@@ -242,13 +258,24 @@ abstract class Striped64 extends Number {
                         }
                     }
                     collide = false;
+                    // 通过 h 找到的槽已经被设置过了  那么修改标识
                 } else if (!wasUncontended)       // CAS already known to fail
                 {
                     wasUncontended = true;      // Continue after rehash
-                } else if (a.cas(v = a.value, fn(v, x))) { break; } else if (n >= NCPU || cells != as) {
+                    // 当通过h找到的槽已经被设置了值 那么就在原有的基础上修改这个值  比如累加
+                } else if (a.cas(v = a.value, fn(v, x))) {
+                    break;
+                    // 当尝试cas更新失败时 判断当前竞争非常激烈   此时如果槽的大小超过了cpu总和 或者cells发生了变化 那么判断当前已经发生过扩容
+                    // 那么关闭掉 碰撞的标识
+                } else if (n >= NCPU || cells != as) {
                     collide = false;            // At max size or stale
-                } else if (!collide) { collide = true; } else if (busy == 0 && casBusy()) {
+                    // 代表允许继续扩容  那么先修改碰撞标识
+                } else if (!collide) {
+                    collide = true;
+                    // 抢占扩容的标识
+                } else if (busy == 0 && casBusy()) {
                     try {
+                        // 扩容一倍大小
                         if (cells == as) {      // Expand table unless stale
                             Cell[] rs = new Cell[n << 1];
                             for (int i = 0; i < n; ++i) { rs[i] = as[i]; }
@@ -260,12 +287,21 @@ abstract class Striped64 extends Number {
                     collide = false;
                     continue;                   // Retry with expanded table
                 }
+                // 当正常往某个槽添加成功数据后
+                // 3种情况 1是从0直接添加成功
+                // 2是在同一个槽尝试添加 并且直接成功
+                // 3是在同一个槽尝试添加 并且没有扩容空间 失败后不断重试直到成功
+                // 3是在同一个槽添加失败 并且发现有扩容的空间  进行扩容后重走上面的逻辑
+
+                // 当成功添加后 重置hash值
                 h ^= h << 13;                   // Rehash
                 h ^= h >>> 17;
                 h ^= h << 5;
+                // 如果cells 还是空的
             } else if (busy == 0 && cells == as && casBusy()) {
                 boolean init = false;
                 try {                           // Initialize table
+                    // 初始大小为2 设置其中一个slot
                     if (cells == as) {
                         Cell[] rs = new Cell[2];
                         rs[h & 1] = new Cell(x);
@@ -276,6 +312,7 @@ abstract class Striped64 extends Number {
                     busy = 0;
                 }
                 if (init) { break; }
+                // 当发现cells 是空 在竞争初始化条件时又失败了 那么就填充到base字段
             } else if (casBase(v = base, fn(v, x))) {
                 break;                          // Fall back on using base
             }
@@ -285,6 +322,7 @@ abstract class Striped64 extends Number {
 
     /**
      * Sets base and all cells to the given value.
+     * 将内部所有cell 以及base 设置成初始值
      */
     final void internalReset(long initialValue) {
         Cell[] as = cells;

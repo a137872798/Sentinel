@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.node;
 /**
  * @author Eric Zhao
  * @since 1.5.0
+ * 尝试占据什么东西
  */
 public interface OccupySupport {
 
@@ -33,9 +34,10 @@ public interface OccupySupport {
      *
      * @param currentTime  current time millis.
      * @param acquireCount tokens count to acquire.
-     * @param threshold    qps threshold.
+     * @param threshold    qps threshold.    如果当前申请的token数会使得超过该qps 那么申请失败
      * @return time should sleep. Time >= {@code occupyTimeout} in {@link OccupyTimeoutProperty} means
      * occupy fail, in this case, the request should be rejected immediately.
+     * 尝试申请多少个token   同时返回结果为推荐阻塞的时长
      */
     long tryOccupyNext(long currentTime, int acquireCount, double threshold);
 
@@ -43,6 +45,7 @@ public interface OccupySupport {
      * Get current waiting amount. Useful for debug.
      *
      * @return current waiting amount
+     * 获取当前的阻塞时间
      */
     long waiting();
 
@@ -50,7 +53,8 @@ public interface OccupySupport {
      * Add request that occupied.
      *
      * @param futureTime   future timestamp that the acquireCount should be added on.
-     * @param acquireCount tokens count.
+     * @param acquireCount tokens count.  请求的tokens数量
+     *                     添加一个占据的请求
      */
     void addWaitingRequest(long futureTime, int acquireCount);
 
@@ -65,6 +69,7 @@ public interface OccupySupport {
      * Get current occupied pass QPS.
      *
      * @return current occupied pass QPS
+     * 获取当前的QPS (每秒处理的请求数)
      */
     double occupiedPassQps();
 }

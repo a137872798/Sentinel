@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 /**
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 返回本机当前版本号
  */
 @CommandMapping(name = "version", desc = "get sentinel version")
 public class VersionCommandHandler implements CommandHandler<String> {

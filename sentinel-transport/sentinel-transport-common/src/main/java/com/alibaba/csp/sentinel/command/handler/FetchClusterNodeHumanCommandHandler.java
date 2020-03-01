@@ -59,9 +59,11 @@ public class FetchClusterNodeHumanCommandHandler implements CommandHandler<Strin
             }
 
         }
+        // 描述信息不能超过79的长度
         nameLength = nameLength > MAX_LEN ? MAX_LEN : nameLength;
         String format = FORMAT.replaceAll("80", String.valueOf(nameLength + 1));
 
+        // 将统计信息以字符串形式打印
         sb.append(String.format(format, "idx", "id", "thread", "pass", "blocked", "success", "total", "aRt",
             "1m-pass", "1m-block", "1m-all", "exception")).append("\n");
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {

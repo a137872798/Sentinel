@@ -19,6 +19,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * 用于打印日志的后台线程
+ */
 class EagleEyeLogDaemon implements Runnable {
 
     private static final long LOG_CHECK_INTERVAL = TimeUnit.SECONDS.toMillis(20);
@@ -55,6 +58,9 @@ class EagleEyeLogDaemon implements Runnable {
         }
     }
 
+    /**
+     * 删除维护的所有文件
+     */
     private void cleanupFiles() {
         for (EagleEyeAppender watchedAppender : watchedAppenders) {
             try {

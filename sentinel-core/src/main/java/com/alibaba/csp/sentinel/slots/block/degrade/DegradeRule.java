@@ -67,6 +67,7 @@ public class DegradeRule extends AbstractRule {
 
     /**
      * RT threshold or exception ratio threshold count.
+     * 平均响应时间阈值
      */
     private double count;
 
@@ -77,12 +78,13 @@ public class DegradeRule extends AbstractRule {
 
     /**
      * Degrade strategy (0: average RT, 1: exception ratio, 2: exception count).
+     * 默认指标按照吞吐量来
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
     /**
      * Minimum number of consecutive slow requests that can trigger RT circuit breaking.
-     *
+     * 能够触发断路的最小吞吐量  也就是首先可能超过了 count  之后只要 passCount小于该值 还是允许的
      * @since 1.7.0
      */
     private int rtSlowRequestAmount = RuleConstant.DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT;
@@ -91,6 +93,7 @@ public class DegradeRule extends AbstractRule {
      * Minimum number of requests (in an active statistic time span) that can trigger circuit breaking.
      *
      * @since 1.7.0
+     * 基于QPS 的 只要单位时间内 totalQPS 小于该值就不做断路判断
      */
     private int minRequestAmount = RuleConstant.DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT;
 
@@ -179,30 +182,48 @@ public class DegradeRule extends AbstractRule {
     // Internal implementation (will be deprecated and moved outside).
 
     private AtomicLong passCount = new AtomicLong(0);
+    /**
+     * 断路标识
+     */
     private final AtomicBoolean cut = new AtomicBoolean(false);
 
+    /**
+     * 判断是否不会被断路
+     * @param context current {@link Context}   本次资源相关的context
+     * @param node    current {@link com.alibaba.csp.sentinel.node.Node}   当前资源相关的node
+     * @param acquireCount
+     * @param args    arguments of the original invocation.  其他相关参数
+     * @return
+     */
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
+        // 代表开启了断路
         if (cut.get()) {
             return false;
         }
 
+        // 获取该资源对应的统计数据
         ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(this.getResource());
         if (clusterNode == null) {
             return true;
         }
 
+        // 如果是基于RT 进行断路
         if (grade == RuleConstant.DEGRADE_GRADE_RT) {
+            // 计算平均响应时间
             double rt = clusterNode.avgRt();
+            // 小于阈值  那么 本次能够成功请求
             if (rt < this.count) {
                 passCount.set(0);
                 return true;
             }
 
             // Sentinel will degrade the service only if count exceeds.
+            // 即使超过了阈值 只要passCount 小于 rtSlowRequestAmount 还是允许
             if (passCount.incrementAndGet() < rtSlowRequestAmount) {
                 return true;
             }
+        // 如果是基于异常比率
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
             double exception = clusterNode.exceptionQps();
             double success = clusterNode.successQps();
@@ -214,14 +235,19 @@ public class DegradeRule extends AbstractRule {
 
             // In the same aligned statistic time window,
             // "success" (aka. completed count) = exception count + non-exception count (realSuccess)
+            // success 是包含了正常处理和 异常处理的
             double realSuccess = success - exception;
+            // realSuccess 只要正常处理的数据量
+            // 全是exception的情况 只要异常数小于 minRequestAmount 还是允许
             if (realSuccess <= 0 && exception < minRequestAmount) {
                 return true;
             }
 
+            // 代表异常比率小于阈值
             if (exception / success < count) {
                 return true;
             }
+            // 如果是根据异常数量
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
             double exception = clusterNode.totalException();
             if (exception < count) {
@@ -229,6 +255,7 @@ public class DegradeRule extends AbstractRule {
             }
         }
 
+        // 开启断路器 并且在一定延时后 恢复
         if (cut.compareAndSet(false, true)) {
             ResetTask resetTask = new ResetTask(this);
             pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);

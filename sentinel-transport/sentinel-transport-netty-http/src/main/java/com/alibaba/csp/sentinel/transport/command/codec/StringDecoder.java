@@ -26,6 +26,11 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
  */
 public class StringDecoder implements Decoder<String> {
 
+    /**
+     * 只支持解码成string类型
+     * @param clazz type of the class
+     * @return
+     */
     @Override
     public boolean canDecode(Class<?> clazz) {
         return String.class.isAssignableFrom(clazz);

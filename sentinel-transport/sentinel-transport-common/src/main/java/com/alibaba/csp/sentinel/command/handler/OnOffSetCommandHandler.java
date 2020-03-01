@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.Constants;
 
 /**
  * @author youji.zj
+ * 更改全局范围的sentinel 开关
  */
 @CommandMapping(name = "setSwitch", desc = "set sentinel switch, accept param: value={true|false}")
 public class OnOffSetCommandHandler implements CommandHandler<String> {

@@ -29,8 +29,18 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  */
 public class AsyncEntry extends CtEntry {
 
+    /**
+     * 本入口关联的上下文对象
+     */
     private Context asyncContext;
 
+    /**
+     * 核心的处理流程就在ProcessorSlot 中
+     * 注意这里的初始化 只是设置了context 字段 没有设置 asyncContext字段
+     * @param resourceWrapper
+     * @param chain
+     * @param context
+     */
     AsyncEntry(ResourceWrapper resourceWrapper, ProcessorSlot<Object> chain, Context context) {
         super(resourceWrapper, chain, context);
     }
@@ -44,7 +54,9 @@ public class AsyncEntry extends CtEntry {
         }
         Context originalContext = context;
         if (originalContext != null) {
+            // 获取当前上下文绑定的entry 对象
             Entry curEntry = originalContext.getCurEntry();
+            // 将context的 entry 指向父对象
             if (curEntry == this) {
                 Entry parent = this.parent;
                 originalContext.setCurEntry(parent);
@@ -67,6 +79,7 @@ public class AsyncEntry extends CtEntry {
 
     /**
      * The async context should not be initialized until the node for current resource has been set to current entry.
+     * 开始初始化异步上下文对象
      */
     void initAsyncContext() {
         if (asyncContext == null) {
@@ -74,6 +87,7 @@ public class AsyncEntry extends CtEntry {
                 asyncContext = context;
                 return;
             }
+            // 将context 包装成 asyncContext   这时 context，asyncContext 都指向同一个node
             this.asyncContext = Context.newAsyncContext(context.getEntranceNode(), context.getName())
                 .setOrigin(context.getOrigin())
                 .setCurEntry(this);

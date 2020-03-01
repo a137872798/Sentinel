@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.util.MethodUtil;
  * Resource wrapper for method invocation.
  *
  * @author qinan.qn
+ * 方法的包装对象
  */
 public class MethodResourceWrapper extends ResourceWrapper {
 
@@ -44,6 +45,10 @@ public class MethodResourceWrapper extends ResourceWrapper {
         return method;
     }
 
+    /**
+     * className:methodName(paramName...)
+     * @return
+     */
     @Override
     public String getShowName() {
         return name;

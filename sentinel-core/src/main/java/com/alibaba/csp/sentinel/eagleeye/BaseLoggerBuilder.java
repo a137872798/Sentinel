@@ -15,12 +15,24 @@
  */
 package com.alibaba.csp.sentinel.eagleeye;
 
+/**
+ * @param <T>
+ */
 class BaseLoggerBuilder<T extends BaseLoggerBuilder<T>> {
 
+    /**
+     * 日志前缀
+     */
     protected final String loggerName;
 
+    /**
+     * 写入日志文件路径
+     */
     protected String filePath = null;
 
+    /**
+     * 日志文件支持的大小
+     */
     protected long maxFileSize = 1024;
 
     protected char entryDelimiter = '|';
@@ -30,6 +42,8 @@ class BaseLoggerBuilder<T extends BaseLoggerBuilder<T>> {
     BaseLoggerBuilder(String loggerName) {
         this.loggerName = loggerName;
     }
+
+    // 3个日志文件路径
 
     public T logFilePath(String logFilePath) {
         return configLogFilePath(logFilePath, EagleEye.EAGLEEYE_LOG_DIR);
@@ -43,6 +57,12 @@ class BaseLoggerBuilder<T extends BaseLoggerBuilder<T>> {
         return configLogFilePath(baseLogFilePath, EagleEye.BASE_LOG_DIR);
     }
 
+    /**
+     * 配置文件路径
+     * @param filePathToConfig
+     * @param basePath
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private T configLogFilePath(String filePathToConfig, String basePath) {
         EagleEyeCoreUtils.checkNotNullEmpty(filePathToConfig, "filePath");

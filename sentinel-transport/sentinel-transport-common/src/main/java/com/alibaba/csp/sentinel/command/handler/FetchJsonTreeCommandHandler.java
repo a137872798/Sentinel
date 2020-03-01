@@ -31,6 +31,7 @@ import com.alibaba.fastjson.JSON;
 
 /**
  * @author leyou
+ * 从root 节点开始往下 将所有资源的统计数据都展示出来
  */
 @CommandMapping(name = "jsonTree", desc = "get tree node VO start from root node")
 public class FetchJsonTreeCommandHandler implements CommandHandler<String> {
@@ -49,6 +50,7 @@ public class FetchJsonTreeCommandHandler implements CommandHandler<String> {
         NodeVo vo = NodeVo.fromDefaultNode(node, parentId);
         results.add(vo);
         String id = vo.getId();
+        // 递归将所有子节点信息添加到 list 中
         for (Node n : node.getChildList()) {
             visit((DefaultNode)n, results, id);
         }

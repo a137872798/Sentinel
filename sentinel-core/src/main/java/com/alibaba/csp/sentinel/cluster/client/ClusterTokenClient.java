@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.cluster.TokenService;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 用于访问集群获取token接口的 client
  */
 public interface ClusterTokenClient extends TokenService {
 
@@ -30,6 +31,7 @@ public interface ClusterTokenClient extends TokenService {
      * Get descriptor of current token server.
      *
      * @return current token server if connected, otherwise null
+     * 获取当前服务器的描述信息  实际上 就 IP:port
      */
     TokenServerDescriptor currentServer();
 
@@ -37,6 +39,7 @@ public interface ClusterTokenClient extends TokenService {
      * Start the token client.
      *
      * @throws Exception some error occurs
+     * 启动客户端
      */
     void start() throws Exception;
 
@@ -51,6 +54,7 @@ public interface ClusterTokenClient extends TokenService {
      * Get state of the cluster token client.
      *
      * @return state of the cluster token client
+     * 获取当前client 状态
      */
     int getState();
 }

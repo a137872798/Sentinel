@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.context.Context;
  *
  * @author Eric Zhao
  * @since 0.2.0
+ * 当退出时 触发的钩子
  */
 public interface ProcessorSlotExitCallback {
 

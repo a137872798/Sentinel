@@ -47,18 +47,28 @@ import com.alibaba.csp.sentinel.context.Context;
  * @see SphU
  * @see Context
  * @see ContextUtil
+ * 每个被包装的 method 会作为一个 entry
  */
 public abstract class Entry implements AutoCloseable {
 
     private static final Object[] OBJECTS0 = new Object[0];
 
+    /**
+     * 该entry的创建时间
+     */
     private long createTime;
+    /**
+     * 该entry对应的node
+     */
     private Node curNode;
     /**
      * {@link Node} of the specific origin, Usually the origin is the Service Consumer.
      */
     private Node originNode;
     private Throwable error;
+    /**
+     * 被包装的资源
+     */
     protected ResourceWrapper resourceWrapper;
 
     public Entry(ResourceWrapper resourceWrapper) {
@@ -74,11 +84,17 @@ public abstract class Entry implements AutoCloseable {
      * Complete the current resource entry and restore the entry stack in context.
      *
      * @throws ErrorEntryFreeException if entry in current context does not match current entry
+     * 代表该资源相关的任务已经完成了
      */
     public void exit() throws ErrorEntryFreeException {
         exit(1, OBJECTS0);
     }
 
+    /**
+     * 指定退出次数
+     * @param count
+     * @throws ErrorEntryFreeException
+     */
     public void exit(int count) throws ErrorEntryFreeException {
         exit(count, OBJECTS0);
     }

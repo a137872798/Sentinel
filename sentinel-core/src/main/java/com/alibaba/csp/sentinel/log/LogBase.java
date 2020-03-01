@@ -37,6 +37,7 @@ import static com.alibaba.csp.sentinel.util.ConfigUtil.addSeparator;
  * </p>
  *
  * @author leyou
+ * 日志基类
  */
 public class LogBase {
 
@@ -74,6 +75,9 @@ public class LogBase {
         }
     }
 
+    /**
+     * 进行初始化工作
+     */
     private static void initialize() {
         logNameUsePid = false;
         logOutputType = LOG_OUTPUT_TYPE_FILE;
@@ -81,6 +85,9 @@ public class LogBase {
         logCharSet = LOG_CHARSET_UTF8;
     }
 
+    /**
+     * 从系统变量中加载一个默认属性
+     */
     private static void loadProperties() {
         Properties properties = LogConfigLoader.getProperties();
 

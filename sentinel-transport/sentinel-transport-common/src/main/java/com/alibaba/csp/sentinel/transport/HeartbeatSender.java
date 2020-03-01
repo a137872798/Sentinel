@@ -31,6 +31,7 @@ public interface HeartbeatSender {
      *
      * @return whether heartbeat is successfully send.
      * @throws Exception if error occurs
+     * 发送心跳包 并返回是否成功
      */
     boolean sendHeartbeat() throws Exception;
 
@@ -39,6 +40,7 @@ public interface HeartbeatSender {
      * the heartbeat interval is not configured in Sentinel config property.
      *
      * @return default interval of the sender in milliseconds
+     * 获取发送心跳包的时间间隔
      */
     long intervalMs();
 }

@@ -39,12 +39,15 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Doug Lea
  * @since 1.8
+ * Striped64 的核心思路就是将多线程间修改某一值的冲突稀释成 1/ncpu (最优情况)   尽可能减少伪共享带来的性能损耗
+ * 该对象本身就是一个 cell[]  当获取该对象的值是 是将cell[] 所有的值做累加
  */
 public class LongAdder extends Striped64 implements Serializable {
     private static final long serialVersionUID = 7249069246863182397L;
 
     /**
      * Version of plus for use in retryUpdate
+     * 代表更新槽的措施是将2个值相加
      */
     @Override
     final long fn(long v, long x) { return v + x; }
@@ -59,6 +62,7 @@ public class LongAdder extends Striped64 implements Serializable {
      * Adds the given value.
      *
      * @param x the value to add
+     *
      */
     public void add(long x) {
         Cell[] as;
@@ -66,7 +70,9 @@ public class LongAdder extends Striped64 implements Serializable {
         HashCode hc;
         Cell a;
         int n;
+        // 首先判断cells 是否初始化 如果没有初始化 直接尝试修改base
         if ((as = cells) != null || !casBase(b = base, b + x)) {
+            // 当修改失败时 获取本线程维护的hash值   调用父类的retryUpdate 不断自旋直到添加成功
             boolean uncontended = true;
             int h = (hc = threadHashCode.get()).code;
             if (as == null || (n = as.length) < 1 ||
@@ -97,6 +103,7 @@ public class LongAdder extends Striped64 implements Serializable {
      * incorporated.
      *
      * @return the sum
+     * 返回它们的总值   这是一个快照 因为没有加锁 单个cell的数值可能会不准确
      */
     public long sum() {
         long sum = base;

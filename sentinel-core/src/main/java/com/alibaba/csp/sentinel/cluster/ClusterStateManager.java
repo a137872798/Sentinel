@@ -34,6 +34,7 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群状态管理器
  */
 public final class ClusterStateManager {
 
@@ -41,14 +42,25 @@ public final class ClusterStateManager {
     public static final int CLUSTER_SERVER = 1;
     public static final int CLUSTER_NOT_STARTED = -1;
 
+    /**
+     * 根据state 选择启动client 或者 启动server
+     */
     private static volatile int mode = CLUSTER_NOT_STARTED;
     private static volatile long lastModified = -1;
 
+    /**
+     * 状态属性
+     */
     private static volatile SentinelProperty<Integer> stateProperty = new DynamicSentinelProperty<Integer>();
+    /**
+     * 集群状态监听器 会监听stateProperty 的变化 并修改manager内部的属性
+     */
     private static final PropertyListener<Integer> PROPERTY_LISTENER = new ClusterStatePropertyListener();
 
     static {
+        // 做一些初始化的前置工作
         InitExecutor.doInit();
+        // 将根据state的变化做修改 解耦到了监听器上
         stateProperty.addListener(PROPERTY_LISTENER);
     }
 
@@ -78,14 +90,17 @@ public final class ClusterStateManager {
      * Set current mode to client mode. If Sentinel currently works in server mode,
      * it will be turned off. Then the cluster client will be started.
      * </p>
+     * 当前设置了 client State
      */
     public static boolean setToClient() {
         if (mode == CLUSTER_CLIENT) {
             return true;
         }
         mode = CLUSTER_CLIENT;
+        // sleep 使得满足MIN_INTERVAL 的时间间隔
         sleepIfNeeded();
         lastModified = TimeUtil.currentTimeMillis();
+        // 启动客户端
         return startClient();
     }
 
@@ -184,6 +199,7 @@ public final class ClusterStateManager {
     /**
      * The interval between two change operations should be greater than {@code MIN_INTERVAL} (by default 10s).
      * Or we need to wait for a while.
+     * 判断是否需要sleep一段时间
      */
     private static void sleepIfNeeded() {
         if (lastModified <= 0) {
@@ -191,6 +207,7 @@ public final class ClusterStateManager {
         }
         long now = TimeUtil.currentTimeMillis();
         long durationPast = now - lastModified;
+        // 至少等待MIN_INTERVAL 的时间才能进行更换
         long estimated = durationPast - MIN_INTERVAL;
         if (estimated < 0) {
             try {
@@ -217,10 +234,17 @@ public final class ClusterStateManager {
         }
     }
 
+    /**
+     * 修改内部的state
+     * @param state
+     * @return
+     */
     private static boolean applyStateInternal(Integer state) {
+        // 非正常的state 忽略
         if (state == null || state < CLUSTER_NOT_STARTED) {
             return false;
         }
+        // 代表状态没有发生变化
         if (state == mode) {
             return true;
         }

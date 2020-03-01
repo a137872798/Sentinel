@@ -22,6 +22,9 @@ package com.alibaba.csp.sentinel.cluster.response.data;
 public class FlowTokenResponseData {
 
     private int remainingCount;
+    /**
+     * 想要获取这么多token 需要等待的时间
+     */
     private int waitInMs;
 
     public int getRemainingCount() {

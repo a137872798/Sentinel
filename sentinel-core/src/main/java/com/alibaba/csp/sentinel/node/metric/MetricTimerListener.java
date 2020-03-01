@@ -30,6 +30,7 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
 /**
  * @author jialiang.linjl
+ * 相当于 会定时间当前所有统计数据写入等到 writer 中
  */
 public class MetricTimerListener implements Runnable {
 
@@ -39,11 +40,13 @@ public class MetricTimerListener implements Runnable {
     @Override
     public void run() {
         Map<Long, List<MetricNode>> maps = new TreeMap<>();
+        // 这里获取到所有集群节点 并聚合数据
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
             ClusterNode node = e.getValue();
             Map<Long, MetricNode> metrics = node.metrics();
             aggregate(maps, metrics, node);
         }
+        // 这里要加上一个global 的node
         aggregate(maps, Constants.ENTRY_NODE.metrics(), Constants.ENTRY_NODE);
         if (!maps.isEmpty()) {
             for (Entry<Long, List<MetricNode>> entry : maps.entrySet()) {
@@ -56,8 +59,15 @@ public class MetricTimerListener implements Runnable {
         }
     }
 
+    /**
+     *
+     * @param maps  聚合数据的容器
+     * @param metrics  每个 clusterNode 对应的统计数据
+     * @param node
+     */
     private void aggregate(Map<Long, List<MetricNode>> maps, Map<Long, MetricNode> metrics, ClusterNode node) {
         for (Entry<Long, MetricNode> entry : metrics.entrySet()) {
+            // 该批数据对应的时间点
             long time = entry.getKey();
             MetricNode metricNode = entry.getValue();
             metricNode.setResource(node.getName());

@@ -28,15 +28,28 @@ import com.alibaba.csp.sentinel.util.VersionUtil;
  * @author youji.zj
  * @author jialiang.linjl
  * @author Eric Zhao
+ * sentinel 的常量
  */
 public final class Constants {
 
     public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.7.2");
 
+    /**
+     * 上下文名称的最大长度
+     */
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;
+    /**
+     * 最多只有该数量的资源能够携带chain (熔断的逻辑都在chain中)
+     */
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
 
+    /**
+     * 根id
+     */
     public final static String ROOT_ID = "machine-root";
+    /**
+     * 默认的上下文名字
+     */
     public final static String CONTEXT_DEFAULT_NAME = "sentinel_default_context";
 
     /**
@@ -56,6 +69,7 @@ public final class Constants {
 
     /**
      * Global ROOT statistic node that represents the universal parent node.
+     * 全局根节点
      */
     public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
         new ClusterNode(ROOT_ID, ResourceTypeConstants.COMMON));

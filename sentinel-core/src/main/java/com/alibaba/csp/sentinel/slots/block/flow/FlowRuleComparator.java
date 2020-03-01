@@ -28,7 +28,7 @@ public class FlowRuleComparator implements Comparator<FlowRule> {
 
     @Override
     public int compare(FlowRule o1, FlowRule o2) {
-        // Clustered mode will be on the top.
+        // Clustered mode will be on the top.  集群模式的优先级高
         if (o1.isClusterMode() && !o2.isClusterMode()) {
             return 1;
         }

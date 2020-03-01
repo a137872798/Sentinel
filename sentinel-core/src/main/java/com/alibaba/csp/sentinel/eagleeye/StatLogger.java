@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author jifeng
+ * 日志对象 实际上内部包含一个appender 对象
  */
 public final class StatLogger {
 

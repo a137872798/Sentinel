@@ -17,19 +17,29 @@ package com.alibaba.csp.sentinel.slots.statistic;
 
 /**
  * @author Eric Zhao
+ * 统计事件类型枚举
  */
 public enum MetricEvent {
 
     /**
-     * Normal pass.
+     * Normal pass.   正常接收的请求数
      */
     PASS,
     /**
-     * Normal block.
+     * Normal block.  被阻塞的请求数
      */
     BLOCK,
+    /**
+     * 出现异常的数量
+     */
     EXCEPTION,
+    /**
+     * 未出现异常的数据
+     */
     SUCCESS,
+    /**
+     * 响应时间
+     */
     RT,
 
     /**

@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
  * Basic interface for clients that sending commands.
  *
  * @author Eric Zhao
+ * 基于client 而言的  发送某个请求到指定host 后 对端会处理该command 并返回一个commandResponse 对象
  */
 public interface CommandClient {
 

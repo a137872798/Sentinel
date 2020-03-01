@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * common包 都是一些服务器实现类的公有接口
  */
 public interface ClusterTransportClient {
 

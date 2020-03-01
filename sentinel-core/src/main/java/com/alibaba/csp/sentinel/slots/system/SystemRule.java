@@ -36,6 +36,7 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
  * @author jialiang.linjl
  * @author Carpenter Lee
  * @see SystemRuleManager
+ * 系统级别规则对象
  */
 public class SystemRule extends AbstractRule {
 
@@ -45,6 +46,7 @@ public class SystemRule extends AbstractRule {
     private double highestSystemLoad = -1;
     /**
      * cpu usage, between [0, 1]
+     * 返回cpu的利用率
      */
     private double highestCpuUsage = -1;
     private double qps = -1;

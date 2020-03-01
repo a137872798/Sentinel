@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.util.SpiLoader;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * server 提供者 同样通过SPI 机制进行初始化
  */
 public final class EmbeddedClusterTokenServerProvider {
 

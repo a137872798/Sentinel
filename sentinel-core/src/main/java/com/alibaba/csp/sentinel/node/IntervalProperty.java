@@ -40,6 +40,10 @@ public class IntervalProperty {
      */
     public static volatile int INTERVAL = RuleConstant.DEFAULT_WINDOW_INTERVAL_MS;
 
+    /**
+     * 为某个属性添加监听器 一旦该属性发生变化时 替换内部的  INTERVAL
+     * @param property
+     */
     public static void register2Property(SentinelProperty<Integer> property) {
         property.addListener(new SimplePropertyListener<Integer>() {
             @Override
@@ -60,6 +64,7 @@ public class IntervalProperty {
     public static void updateInterval(int newInterval) {
         if (newInterval != INTERVAL) {
             INTERVAL = newInterval;
+            // 重置集群下所有节点  (之前默认是 2个窗口 总窗口大小为1000)
             ClusterBuilderSlot.resetClusterNodes();
         }
         RecordLog.info("[IntervalProperty] INTERVAL updated to: " + INTERVAL);

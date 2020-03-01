@@ -28,6 +28,9 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 public class CommandRequest {
 
     private final Map<String, String> metadata = new HashMap<String, String>();
+    /**
+     * 本次请求体携带的参数
+     */
     private final Map<String, String> parameters = new HashMap<String, String>();
     private byte[] body;
 

@@ -20,6 +20,7 @@ package com.alibaba.csp.sentinel.command;
  *
  * @param <R> type of the result
  * @author Eric Zhao
+ * 处理command后返回的响应结果
  */
 public class CommandResponse<R> {
 

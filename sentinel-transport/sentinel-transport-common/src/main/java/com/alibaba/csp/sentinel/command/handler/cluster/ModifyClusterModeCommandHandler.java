@@ -27,6 +27,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 设置目标机器集群模式的请求处理器
  */
 @CommandMapping(name = "setClusterMode", desc = "set cluster mode, accept param: mode={0|1} 0:client mode 1:server mode")
 public class ModifyClusterModeCommandHandler implements CommandHandler<String> {
@@ -35,6 +36,7 @@ public class ModifyClusterModeCommandHandler implements CommandHandler<String> {
     public CommandResponse<String> handle(CommandRequest request) {
         try {
             int mode = Integer.valueOf(request.getParam("mode"));
+            // 尝试修改成client/server 却发现不支持时 返回对应的异常
             if (mode == ClusterStateManager.CLUSTER_CLIENT && !TokenClientProvider.isClientSpiAvailable()) {
                 return CommandResponse.ofFailure(new IllegalStateException("token client mode not available: no SPI found"));
             }
@@ -43,6 +45,7 @@ public class ModifyClusterModeCommandHandler implements CommandHandler<String> {
             }
             RecordLog.info("[ModifyClusterModeCommandHandler] Modifying cluster mode to: " + mode);
 
+            // 这里同时会触发监听器 进而启动 client/server
             ClusterStateManager.applyState(mode);
             return CommandResponse.ofSuccess("success");
         } catch (NumberFormatException ex) {

@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
  * Provides millisecond-level time of OS.
  *
  * @author qinan.qn
+ * 所有关于获取系统时间的请求都从该对象统一获取 而不是每个线程分别调用 因为System.currentTimeMillis() 的性能开销比较大
  */
 public final class TimeUtil {
 

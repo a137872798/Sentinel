@@ -20,6 +20,7 @@ package com.alibaba.csp.sentinel.cluster;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群服务器(协调点)描述信息
  */
 public class TokenServerDescriptor {
 

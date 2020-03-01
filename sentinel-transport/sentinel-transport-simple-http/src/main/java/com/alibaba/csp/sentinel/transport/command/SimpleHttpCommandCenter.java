@@ -187,6 +187,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                 try {
                     socket = this.serverSocket.accept();
                     setSocketSoTimeout(socket);
+                    // 每个接收到的客户端请求会被封装成task
                     HttpEventTask eventTask = new HttpEventTask(socket);
                     bizExecutor.submit(eventTask);
                 } catch (Exception e) {

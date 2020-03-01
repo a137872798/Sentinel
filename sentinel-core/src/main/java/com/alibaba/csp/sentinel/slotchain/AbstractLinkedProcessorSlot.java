@@ -20,6 +20,7 @@ import com.alibaba.csp.sentinel.context.Context;
 /**
  * @author qinan.qn
  * @author jialiang.linjl
+ * 每个slot 通过链表结构连接
  */
 public abstract class AbstractLinkedProcessorSlot<T> implements ProcessorSlot<T> {
 
@@ -28,6 +29,7 @@ public abstract class AbstractLinkedProcessorSlot<T> implements ProcessorSlot<T>
     @Override
     public void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args)
         throws Throwable {
+        // 这里转发给了下个节点 而不是直接在本节点做处理
         if (next != null) {
             next.transformEntry(context, resourceWrapper, obj, count, prioritized, args);
         }
@@ -46,6 +48,8 @@ public abstract class AbstractLinkedProcessorSlot<T> implements ProcessorSlot<T>
             next.exit(context, resourceWrapper, count, args);
         }
     }
+
+    // 这里使用 AbstractLinkedProcessorSlot 类型作为骨架方法实现
 
     public AbstractLinkedProcessorSlot<?> getNext() {
         return next;

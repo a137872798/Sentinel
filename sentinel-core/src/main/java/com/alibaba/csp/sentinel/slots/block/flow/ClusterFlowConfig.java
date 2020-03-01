@@ -23,6 +23,8 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群模式下 限流相关的配置  比如说单点限流 就是看单台机器某个服务的调用次数 那么配合均衡负载是能起到一定全局范围内的预测的
+ * 不过如果开启集群模式 那么就可以精确的按照全局范围内的某个服务进行控制了
  */
 public class ClusterFlowConfig {
 
@@ -33,14 +35,20 @@ public class ClusterFlowConfig {
 
     /**
      * Threshold type (average by local value or global value).
+     * 阈值类型  阈值是从本地获取 还是从全局获取
      */
     private int thresholdType = ClusterRuleConstant.FLOW_THRESHOLD_AVG_LOCAL;
+    /**
+     * 是否使用本地降级方式
+     */
     private boolean fallbackToLocalWhenFail = true;
 
     /**
      * 0: normal.
      */
     private int strategy = ClusterRuleConstant.FLOW_CLUSTER_STRATEGY_NORMAL;
+
+    // 看来集群范围有默认的 窗口总大小 以及样本数量
 
     private int sampleCount = ClusterRuleConstant.DEFAULT_CLUSTER_SAMPLE_COUNT;
     /**

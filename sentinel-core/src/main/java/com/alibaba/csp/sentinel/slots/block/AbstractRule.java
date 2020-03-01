@@ -20,11 +20,13 @@ package com.alibaba.csp.sentinel.slots.block;
  *
  * @author youji.zj
  * @author Eric Zhao
+ * 限流规则骨架类
  */
 public abstract class AbstractRule implements Rule {
 
     /**
      * Resource name.
+     * 本规则对应的资源
      */
     private String resource;
 
@@ -52,6 +54,11 @@ public abstract class AbstractRule implements Rule {
         return limitApp;
     }
 
+    /**
+     * 设置限流应用
+     * @param limitApp
+     * @return
+     */
     public AbstractRule setLimitApp(String limitApp) {
         this.limitApp = limitApp;
         return this;

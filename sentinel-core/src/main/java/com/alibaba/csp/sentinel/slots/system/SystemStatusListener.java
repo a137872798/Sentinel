@@ -41,6 +41,9 @@ public class SystemStatusListener implements Runnable {
         return currentCpuUsage;
     }
 
+    /**
+     * 定期检测系统状态 如果出现异常 则打印日志
+     */
     @Override
     public void run() {
         try {

@@ -35,6 +35,7 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * @see ContextUtil
  * @see ContextUtil#enter(String, String)
  * @see NodeSelectorSlot
+ * 代表进入树的入口节点
  */
 public class EntranceNode extends DefaultNode {
 
@@ -42,6 +43,7 @@ public class EntranceNode extends DefaultNode {
         super(id, clusterNode);
     }
 
+    // 该对象相关的统计方法 会将子节点全部计算在内
     @Override
     public double avgRt() {
         double total = 0;

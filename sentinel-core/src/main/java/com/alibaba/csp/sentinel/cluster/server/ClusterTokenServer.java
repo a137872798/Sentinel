@@ -20,6 +20,7 @@ package com.alibaba.csp.sentinel.cluster.server;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群服务器  用于在整个集群范围内控制流量
  */
 public interface ClusterTokenServer {
 

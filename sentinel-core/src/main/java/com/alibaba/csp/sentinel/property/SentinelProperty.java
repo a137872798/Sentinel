@@ -27,6 +27,7 @@ package com.alibaba.csp.sentinel.property;
  *
  * @param <T> the target type.
  * @author Carpenter Lee
+ * sentinel的属性本身是支持添加监听器的  能够追踪属性的变化
  */
 public interface SentinelProperty<T> {
 

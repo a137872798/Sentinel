@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.node.Node;
 
 /**
  * @author qinan.qn
+ * 将节点信息 以树型结构返回
  */
 @CommandMapping(name = "tree", desc = "get metrics in tree mode, use id to specify detailed tree root")
 public class FetchTreeCommandHandler implements CommandHandler<String> {
@@ -39,8 +40,10 @@ public class FetchTreeCommandHandler implements CommandHandler<String> {
         DefaultNode start = Constants.ROOT;
 
         if (id == null) {
+            // 如果没有携带id  那么就从root节点开始 打印所有信息
             visitTree(0, start, sb);
         } else {
+            // 通过id  定位到节点后 开始打印信息
             boolean exactly = false;
             for (Node n : start.getChildList()) {
                 DefaultNode dn = (DefaultNode)n;

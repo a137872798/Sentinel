@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.cluster.response.Response;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 响应体解码器
  */
 public interface ResponseEntityDecoder<S, T extends Response> extends EntityDecoder<S, T> {
 

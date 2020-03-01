@@ -28,9 +28,14 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  * Provides and filters command handlers registered via SPI.
  *
  * @author Eric Zhao
+ * commandHandler 的迭代器对象
+ * 某台机器支持哪些commandHandler 是通过SPI机制进行拓展的
  */
 public class CommandHandlerProvider implements Iterable<CommandHandler> {
 
+    /**
+     * JDK SPI 对象本身就实现了迭代器接口 再每次调用时 会从.service 文件中多读取一行
+     */
     private final ServiceLoader<CommandHandler> serviceLoader = ServiceLoaderUtil.getServiceLoader(
         CommandHandler.class);
 
@@ -38,6 +43,7 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
      * Get all command handlers annotated with {@link CommandMapping} with command name.
      *
      * @return list of all named command handlers
+     * 返回name 与 handler的映射
      */
     public Map<String, CommandHandler> namedHandlers() {
         Map<String, CommandHandler> map = new HashMap<String, CommandHandler>();
@@ -50,6 +56,11 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
         return map;
     }
 
+    /**
+     * 解析handler的注解
+     * @param handler
+     * @return
+     */
     private String parseCommandName(CommandHandler handler) {
         CommandMapping commandMapping = handler.getClass().getAnnotation(CommandMapping.class);
         if (commandMapping != null) {

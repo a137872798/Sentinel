@@ -20,6 +20,7 @@ import java.util.Collection;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 相比 FlowRequestData 携带额外的参数
  */
 public class ParamFlowRequestData {
 

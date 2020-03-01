@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.statistic.metric;
 /**
  * @author Eric Zhao
  * @since 1.5.0
+ * 代表支持打印debug信息
  */
 public interface DebugSupport {
 

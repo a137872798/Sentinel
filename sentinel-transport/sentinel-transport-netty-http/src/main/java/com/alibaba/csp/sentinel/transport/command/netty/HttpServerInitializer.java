@@ -24,6 +24,7 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 
 /**
  * @author Eric Zhao
+ * netty的处理链
  */
 public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
 

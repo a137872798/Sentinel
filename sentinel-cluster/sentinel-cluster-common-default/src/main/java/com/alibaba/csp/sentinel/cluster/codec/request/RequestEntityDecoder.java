@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.cluster.request.Request;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 请求体解码器
  */
 public interface RequestEntityDecoder<S, T extends Request> extends EntityDecoder<S, T> {
 

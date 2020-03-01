@@ -36,9 +36,13 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  * @author youji.zj
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 用于管理所有的 AuthorityRule
  */
 public final class AuthorityRuleManager {
 
+    /**
+     * key 对应资源名 value 对应资源的规则
+     */
     private static Map<String, Set<AuthorityRule>> authorityRules = new ConcurrentHashMap<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
@@ -89,8 +93,15 @@ public final class AuthorityRuleManager {
         return rules;
     }
 
+    /**
+     * 属性监听器
+     */
     private static class RulePropertyListener implements PropertyListener<List<AuthorityRule>> {
 
+        /**
+         * 当检测到权限规则发生变化时 修改内部的容器
+         * @param conf
+         */
         @Override
         public void configUpdate(List<AuthorityRule> conf) {
             Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(conf);
@@ -102,7 +113,13 @@ public final class AuthorityRuleManager {
             RecordLog.info("[AuthorityRuleManager] Authority rules received: " + authorityRules);
         }
 
+        /**
+         * 将 list 转换成map
+         * @param list
+         * @return
+         */
         private Map<String, Set<AuthorityRule>> loadAuthorityConf(List<AuthorityRule> list) {
+            // 这里为什么要用并发容器啊???
             Map<String, Set<AuthorityRule>> newRuleMap = new ConcurrentHashMap<>();
 
             if (list == null || list.isEmpty()) {
@@ -115,10 +132,12 @@ public final class AuthorityRuleManager {
                     continue;
                 }
 
+                // 默认情况 limitApp 是 "default"
                 if (StringUtil.isBlank(rule.getLimitApp())) {
                     rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
                 }
 
+                // 以resource为key  添加映射关系
                 String identity = rule.getResource();
                 Set<AuthorityRule> ruleSet = newRuleMap.get(identity);
                 // putIfAbsent
@@ -135,6 +154,10 @@ public final class AuthorityRuleManager {
             return newRuleMap;
         }
 
+        /**
+         * 当首次设置监听器时 如果Prop 对象已经有数据了就会触发该方法
+         * @param value the value loaded.
+         */
         @Override
         public void configLoad(List<AuthorityRule> value) {
             Map<String, Set<AuthorityRule>> rules = loadAuthorityConf(value);
@@ -151,6 +174,11 @@ public final class AuthorityRuleManager {
         return authorityRules;
     }
 
+    /**
+     * 要求rule 必须设置limitApp
+     * @param rule
+     * @return
+     */
     public static boolean isValidRule(AuthorityRule rule) {
         return rule != null && !StringUtil.isBlank(rule.getResource())
             && rule.getStrategy() >= 0 && StringUtil.isNotBlank(rule.getLimitApp());

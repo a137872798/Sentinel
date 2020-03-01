@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.node.Node;
  * A universal interface for traffic shaping controller.
  *
  * @author jialiang.linjl
+ * 流量形状控制器???
  */
 public interface TrafficShapingController {
 
@@ -31,6 +32,7 @@ public interface TrafficShapingController {
      * @param acquireCount count to acquire
      * @param prioritized whether the request is prioritized
      * @return true if the resource entry can pass; false if it should be blocked
+     * 能否满足请求的量
      */
     boolean canPass(Node node, int acquireCount, boolean prioritized);
 

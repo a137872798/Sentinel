@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  *
  * @author Eric Zhao
  * @since 0.2.0
+ * 处理链的回调对象
  */
 public interface ProcessorSlotEntryCallback<T> {
 

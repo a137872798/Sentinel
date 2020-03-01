@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
  * Encode a string to a byte array.
  *
  * @author Eric Zhao
+ * StringDecoder/StringEncoder 就是利用string的基本特性进行编解码
  */
 public class StringEncoder implements Encoder<String> {
 

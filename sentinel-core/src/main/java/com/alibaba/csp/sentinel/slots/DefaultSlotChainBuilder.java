@@ -32,6 +32,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemSlot;
  *
  * @author qinan.qn
  * @author leyou
+ * 该对象会生成一系列默认的处理slot 对象
  */
 public class DefaultSlotChainBuilder implements SlotChainBuilder {
 

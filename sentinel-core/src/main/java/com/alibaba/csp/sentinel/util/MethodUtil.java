@@ -26,6 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class MethodUtil {
 
+    /**
+     * 全局缓存 用于保存方法和对应方法名的关系
+     */
     private static final Map<Method, String> methodNameMap = new ConcurrentHashMap<Method, String>();
 
     private static final Object LOCK = new Object();
@@ -35,11 +38,13 @@ public final class MethodUtil {
      *
      * @param method method instance
      * @return resolved method name
+     * 获取某个方法的名称
      */
     public static String resolveMethodName(Method method) {
         if (method == null) {
             throw new IllegalArgumentException("Null method");
         }
+        // 首先尝试从缓存获取 也就是如果打算多次调用一个方法 每次都要包装的话 使用缓存可以提高效率
         String methodName = methodNameMap.get(method);
         if (methodName == null) {
             synchronized (LOCK) {
@@ -47,9 +52,11 @@ public final class MethodUtil {
                 if (methodName == null) {
                     StringBuilder sb = new StringBuilder();
 
+                    // 这里还包含了 类名 参数名
                     String className = method.getDeclaringClass().getName();
                     String name = method.getName();
                     Class<?>[] params = method.getParameterTypes();
+                    // className:methodName(paramName...)
                     sb.append(className).append(":").append(name);
                     sb.append("(");
 

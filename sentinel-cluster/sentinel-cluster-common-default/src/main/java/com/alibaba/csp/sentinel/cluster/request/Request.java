@@ -20,6 +20,7 @@ package com.alibaba.csp.sentinel.cluster.request;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群模式下的请求体接口
  */
 public interface Request {
 
@@ -27,6 +28,7 @@ public interface Request {
      * Get request type.
      *
      * @return request type
+     * 获取请求的类型
      */
     int getType();
 
@@ -34,6 +36,7 @@ public interface Request {
      * Get request ID.
      *
      * @return unique request ID
+     * 获取请求id
      */
     int getId();
 }

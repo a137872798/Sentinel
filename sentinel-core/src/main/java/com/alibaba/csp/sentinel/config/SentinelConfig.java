@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author leyou
  * @author Eric Zhao
+ * sentinel 的配置类
  */
 public final class SentinelConfig {
 
@@ -40,6 +41,9 @@ public final class SentinelConfig {
      */
     public static final int APP_TYPE_COMMON = 0;
 
+    /**
+     * 存储属性的容器
+     */
     private static final Map<String, String> props = new ConcurrentHashMap<>();
     private static int appType = APP_TYPE_COMMON;
 
@@ -60,8 +64,11 @@ public final class SentinelConfig {
 
     static {
         try {
+            // 初始化内部属性  就是将一些默认值添加到 props 中
             initialize();
+            // 开始从其他地方加载prop
             loadProps();
+            // 解析appType
             resolveAppType();
             RecordLog.info("[SentinelConfig] Application type resolved: " + appType);
         } catch (Throwable ex) {
@@ -70,6 +77,9 @@ public final class SentinelConfig {
         }
     }
 
+    /**
+     * 解析appType
+     */
     private static void resolveAppType() {
         try {
             String type = getConfig(APP_TYPE);
@@ -95,6 +105,9 @@ public final class SentinelConfig {
         setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
     }
 
+    /**
+     * 这里会通过一个loader 来加载prop
+     */
     private static void loadProps() {
         Properties properties = SentinelConfigLoader.getProperties();
         for (Object key : properties.keySet()) {

@@ -37,13 +37,26 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  * @author jialiang.linjl
  * @author Eric Zhao
  * @author Carpenter Lee
+ * 该对象基于滑动窗口算法
  */
 public abstract class LeapArray<T> {
 
+    /**
+     * 经过多少时间滑动窗口
+     */
     protected int windowLengthInMs;
+    /**
+     * 样本数量
+     */
     protected int sampleCount;
+    /**
+     * 统计所有数据的总时长
+     */
     protected int intervalInMs;
 
+    /**
+     * WindowWrap 内部包含了当前所在窗口的起始时间 以及该窗口的大小(时间长短)
+     */
     protected final AtomicReferenceArray<WindowWrap<T>> array;
 
     /**
@@ -54,7 +67,7 @@ public abstract class LeapArray<T> {
     /**
      * The total bucket count is: {@code sampleCount = intervalInMs / windowLengthInMs}.
      *
-     * @param sampleCount  bucket count of the sliding window
+     * @param sampleCount  bucket count of the sliding window   维护的窗口数量
      * @param intervalInMs the total time interval of this {@link LeapArray} in milliseconds
      */
     public LeapArray(int sampleCount, int intervalInMs) {
@@ -62,10 +75,12 @@ public abstract class LeapArray<T> {
         AssertUtil.isTrue(intervalInMs > 0, "total time interval of the sliding window should be positive");
         AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
 
+        // 总时长/样品数量 得到每个窗口的长度
         this.windowLengthInMs = intervalInMs / sampleCount;
         this.intervalInMs = intervalInMs;
         this.sampleCount = sampleCount;
 
+        // 根据长度生成数组对象
         this.array = new AtomicReferenceArray<>(sampleCount);
     }
 
@@ -73,6 +88,7 @@ public abstract class LeapArray<T> {
      * Get the bucket at current timestamp.
      *
      * @return the bucket at current timestamp
+     * 返回当前时间对应的 bucket
      */
     public WindowWrap<T> currentWindow() {
         return currentWindow(TimeUtil.currentTimeMillis());
@@ -83,6 +99,7 @@ public abstract class LeapArray<T> {
      *
      * @param timeMillis current time in milliseconds
      * @return the new empty bucket
+     * 根据当前时间创建一个空的bucket
      */
     public abstract T newEmptyBucket(long timeMillis);
 
@@ -92,9 +109,15 @@ public abstract class LeapArray<T> {
      * @param startTime  the start time of the bucket in milliseconds
      * @param windowWrap current bucket
      * @return new clean bucket at given start time
+     * 根据新的startTime 创建bucket 并替换oldWindow
      */
     protected abstract WindowWrap<T> resetWindowTo(WindowWrap<T> windowWrap, long startTime);
 
+    /**
+     * 根据时间来计算下标
+     * @param timeMillis
+     * @return
+     */
     private int calculateTimeIdx(/*@Valid*/ long timeMillis) {
         long timeId = timeMillis / windowLengthInMs;
         // Calculate current index so we can map the timestamp to the leap array.
@@ -110,25 +133,31 @@ public abstract class LeapArray<T> {
      *
      * @param timeMillis a valid timestamp in milliseconds
      * @return current bucket item at provided timestamp if the time is valid; null if time is invalid
+     * 根据当前时间戳获取时间窗口对象
      */
     public WindowWrap<T> currentWindow(long timeMillis) {
         if (timeMillis < 0) {
             return null;
         }
 
+        // 根据当前时间来计算下标
         int idx = calculateTimeIdx(timeMillis);
         // Calculate current bucket start time.
+        // 计算该窗口的起始时间
         long windowStart = calculateWindowStart(timeMillis);
 
         /*
          * Get bucket item at given time from the array.
          *
-         * (1) Bucket is absent, then just create a new bucket and CAS update to circular array.
-         * (2) Bucket is up-to-date, then just return the bucket.
-         * (3) Bucket is deprecated, then reset current bucket and clean all deprecated buckets.
+         * (1) Bucket is absent, then just create a new bucket and CAS update to circular array.  // 当前bucket还没有创建 那么通过cas将newBucket添加到槽中
+         * (2) Bucket is up-to-date, then just return the bucket. // 如果当前时间对应的槽已经创建了 那么直接返回
+         * (3) Bucket is deprecated, then reset current bucket and clean all deprecated buckets.  // 如果当前时间对应的bucket已经被废弃 那么重置当前bucket
+         * 并且丢弃所有已经废弃的bucket
          */
         while (true) {
+            // 获取当前时间窗口
             WindowWrap<T> old = array.get(idx);
+            // 对应第一种情况 那么就创建一个新的bucket
             if (old == null) {
                 /*
                  *     B0       B1      B2    NULL      B4
@@ -142,14 +171,17 @@ public abstract class LeapArray<T> {
                  * then try to update circular array via a CAS operation. Only one thread can
                  * succeed to update, while other threads yield its time slice.
                  */
+                // 使用相关参数创建window 对象
                 WindowWrap<T> window = new WindowWrap<T>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
                 if (array.compareAndSet(idx, null, window)) {
                     // Successfully updated, return the created bucket.
                     return window;
                 } else {
                     // Contention failed, the thread will yield its time slice to wait for bucket available.
+                    // 如果cas失败 则让出cpu时间分片 等待其他线程创建bucket
                     Thread.yield();
                 }
+            // 代表2个bucket 完全匹配 那么直接返回bucket
             } else if (windowStart == old.windowStart()) {
                 /*
                  *     B0       B1      B2     B3      B4
@@ -163,6 +195,7 @@ public abstract class LeapArray<T> {
                  * that means the time is within the bucket, so directly return the bucket.
                  */
                 return old;
+            // 代表时间窗口已经发生了滑动
             } else if (windowStart > old.windowStart()) {
                 /*
                  *   (old)
@@ -184,6 +217,7 @@ public abstract class LeapArray<T> {
                 if (updateLock.tryLock()) {
                     try {
                         // Successfully get the update lock, now we reset the bucket.
+                        // 按照新的开始时间创建一个bucket
                         return resetWindowTo(old, windowStart);
                     } finally {
                         updateLock.unlock();
@@ -192,6 +226,7 @@ public abstract class LeapArray<T> {
                     // Contention failed, the thread will yield its time slice to wait for bucket available.
                     Thread.yield();
                 }
+                // 一般不会进入到这里 如果进入到这里 那么返回对应的window 不过并不过没有替换当前数组中的元素
             } else if (windowStart < old.windowStart()) {
                 // Should not go through here, as the provided time is already behind.
                 return new WindowWrap<T>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
@@ -204,15 +239,18 @@ public abstract class LeapArray<T> {
      *
      * @param timeMillis a valid timestamp in milliseconds
      * @return the previous bucket item before provided timestamp
+     * 获取该时间对应的上一个window
      */
     public WindowWrap<T> getPreviousWindow(long timeMillis) {
         if (timeMillis < 0) {
             return null;
         }
+        // 额外减少一个 windowLengthInMs
         int idx = calculateTimeIdx(timeMillis - windowLengthInMs);
         timeMillis = timeMillis - windowLengthInMs;
         WindowWrap<T> wrap = array.get(idx);
 
+        // 如果该window 已经超时 那么返回null
         if (wrap == null || isWindowDeprecated(wrap)) {
             return null;
         }
@@ -247,6 +285,7 @@ public abstract class LeapArray<T> {
 
         WindowWrap<T> bucket = array.get(idx);
 
+        // 是否在合理的时间范围中
         if (bucket == null || !bucket.isTimeInWindow(timeMillis)) {
             return null;
         }
@@ -260,11 +299,18 @@ public abstract class LeapArray<T> {
      *
      * @param windowWrap a non-null bucket
      * @return true if the bucket is deprecated; otherwise false
+     * 判断某个时间窗口是否应该被丢弃
      */
     public boolean isWindowDeprecated(/*@NonNull*/ WindowWrap<T> windowWrap) {
         return isWindowDeprecated(TimeUtil.currentTimeMillis(), windowWrap);
     }
 
+    /**
+     * 该窗口的起始时间距今已经超过了 intervalInMs 那么该窗口就应该被丢弃
+     * @param time
+     * @param windowWrap
+     * @return
+     */
     public boolean isWindowDeprecated(long time, WindowWrap<T> windowWrap) {
         return time - windowWrap.windowStart() > intervalInMs;
     }
@@ -279,6 +325,11 @@ public abstract class LeapArray<T> {
         return list(TimeUtil.currentTimeMillis());
     }
 
+    /**
+     * 返回为丢弃的一组时间窗口
+     * @param validTime
+     * @return
+     */
     public List<WindowWrap<T>> list(long validTime) {
         int size = array.length();
         List<WindowWrap<T>> result = new ArrayList<WindowWrap<T>>(size);
@@ -298,6 +349,7 @@ public abstract class LeapArray<T> {
      * Get all buckets for entire sliding window including deprecated buckets.
      *
      * @return all buckets for entire sliding window
+     * 返回当前所有时间窗口 包含应该被丢弃的
      */
     public List<WindowWrap<T>> listAll() {
         int size = array.length();
@@ -324,6 +376,11 @@ public abstract class LeapArray<T> {
         return values(TimeUtil.currentTimeMillis());
     }
 
+    /**
+     * 把窗口的内容物拿出来
+     * @param timeMillis
+     * @return
+     */
     public List<T> values(long timeMillis) {
         if (timeMillis < 0) {
             return new ArrayList<T>();
@@ -373,6 +430,7 @@ public abstract class LeapArray<T> {
      * Get sample count (total amount of buckets).
      *
      * @return sample count
+     * 获取总的 bucket数量
      */
     public int getSampleCount() {
         return sampleCount;
@@ -391,11 +449,16 @@ public abstract class LeapArray<T> {
      * Get total interval length of the sliding window.
      *
      * @return interval in second
+     * 返回滑动窗口总的记录(时间)长度
      */
     public double getIntervalInSecond() {
         return intervalInMs / 1000.0;
     }
 
+    /**
+     * 打印当前信息
+     * @param time
+     */
     public void debug(long time) {
         StringBuilder sb = new StringBuilder();
         List<WindowWrap<T>> lists = list(time);
@@ -406,11 +469,20 @@ public abstract class LeapArray<T> {
         System.out.println(sb.toString());
     }
 
+    /**
+     * 当前等待的数量为0
+     * @return
+     */
     public long currentWaiting() {
         // TODO: default method. Should remove this later.
         return 0;
     }
 
+    /**
+     * 默认不支持添加一个等待对象
+     * @param time
+     * @param acquireCount
+     */
     public void addWaiting(long time, int acquireCount) {
         // Do nothing by default.
         throw new UnsupportedOperationException();

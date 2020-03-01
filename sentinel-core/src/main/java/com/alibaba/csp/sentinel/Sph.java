@@ -28,6 +28,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * @author jialiang.linjl
  * @author leyou
  * @author Eric Zhao
+ * 相比  SphResourceTypeSupport 简化了参数
  */
 public interface Sph extends SphResourceTypeSupport {
 
@@ -37,6 +38,7 @@ public interface Sph extends SphResourceTypeSupport {
      * @param name the unique name of the protected resource
      * @return entry get.
      * @throws BlockException if the block criteria is met
+     * 这里没有传入类型信息 而是直接使用名字生成 entry
      */
     Entry entry(String name) throws BlockException;
 
@@ -56,6 +58,7 @@ public interface Sph extends SphResourceTypeSupport {
      * @param count  the count that the resource requires
      * @return entry get.
      * @throws BlockException if the block criteria is met
+     * 同时传入token的数量
      */
     Entry entry(Method method, int count) throws BlockException;
 

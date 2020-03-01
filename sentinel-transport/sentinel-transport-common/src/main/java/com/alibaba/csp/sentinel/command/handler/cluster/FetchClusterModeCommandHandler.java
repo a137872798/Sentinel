@@ -27,6 +27,8 @@ import com.alibaba.fastjson.JSONObject;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 应该跟rocketMQ 类似的 每次请求会传递一个Command 标识本次请求的类型 之后找到匹配的handler处理
+ * 该handler 用于处理拉取集群模式的请求  支持的Command 应该就是 getClusterMode
  */
 @CommandMapping(name = "getClusterMode", desc = "get cluster mode status")
 public class FetchClusterModeCommandHandler implements CommandHandler<String> {
@@ -34,8 +36,11 @@ public class FetchClusterModeCommandHandler implements CommandHandler<String> {
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
         JSONObject res = new JSONObject()
+                // 本机属于 server 还是 client 还是未启动
             .fluentPut("mode", ClusterStateManager.getMode())
+                // 本机最后一次改动的时间
             .fluentPut("lastModified", ClusterStateManager.getLastModified())
+                // 本机是否支持启动client/server  模式
             .fluentPut("clientAvailable", isClusterClientSpiAvailable())
             .fluentPut("serverAvailable", isClusterServerSpiAvailable());
         return CommandResponse.ofSuccess(res.toJSONString());

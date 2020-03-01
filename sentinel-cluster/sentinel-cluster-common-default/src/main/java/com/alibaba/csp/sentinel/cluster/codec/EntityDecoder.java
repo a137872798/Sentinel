@@ -20,6 +20,7 @@ package com.alibaba.csp.sentinel.cluster.codec;
  * @param <T> target entity type
  * @author Eric Zhao
  * @since 1.4.0
+ * sentinel 解码器
  */
 public interface EntityDecoder<S, T> {
 

@@ -34,6 +34,7 @@ import com.alibaba.csp.sentinel.slotchain.ProcessorSlotExitCallback;
  *
  * @author Eric Zhao
  * @since 0.2.0
+ * 该对象维护了所有slotCallback 信息
  */
 public final class StatisticSlotCallbackRegistry {
 

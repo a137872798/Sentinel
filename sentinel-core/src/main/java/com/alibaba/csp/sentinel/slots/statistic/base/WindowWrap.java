@@ -21,21 +21,25 @@ package com.alibaba.csp.sentinel.slots.statistic.base;
  * @param <T> data type
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 将某个对象包装成窗口
  */
 public class WindowWrap<T> {
 
     /**
      * Time length of a single window bucket in milliseconds.
+     * 每经过多少时间滑动一个窗口
      */
     private final long windowLengthInMs;
 
     /**
      * Start timestamp of the window in milliseconds.
+     * 该对象所在当前窗口的起始时间
      */
     private long windowStart;
 
     /**
      * Statistic data.
+     * 填装数据的对象
      */
     private T value;
 
@@ -83,6 +87,7 @@ public class WindowWrap<T> {
      * @param timeMillis valid timestamp in ms
      * @return true if the given time is in current bucket, otherwise false
      * @since 1.5.0
+     * 传入的时间是否在当前窗口中
      */
     public boolean isTimeInWindow(long timeMillis) {
         return windowStart <= timeMillis && timeMillis < windowStart + windowLengthInMs;

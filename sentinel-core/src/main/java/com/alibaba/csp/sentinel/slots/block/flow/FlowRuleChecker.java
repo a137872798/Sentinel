@@ -38,6 +38,7 @@ import com.alibaba.csp.sentinel.util.function.Function;
  * Rule checker for flow control rules.
  *
  * @author Eric Zhao
+ * 负责检测某个请求是否满足条件
  */
 public class FlowRuleChecker {
 
@@ -68,13 +69,24 @@ public class FlowRuleChecker {
             return true;
         }
 
+        // 如果在集群模式下
         if (rule.isClusterMode()) {
             return passClusterCheck(rule, context, node, acquireCount, prioritized);
         }
 
+        // 否则在本地检测
         return passLocalCheck(rule, context, node, acquireCount, prioritized);
     }
 
+    /**
+     * 在本地检查某个请求是否允许
+     * @param rule
+     * @param context
+     * @param node
+     * @param acquireCount
+     * @param prioritized
+     * @return
+     */
     private static boolean passLocalCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                           boolean prioritized) {
         Node selectedNode = selectNodeByRequesterAndStrategy(rule, context, node);
@@ -85,6 +97,13 @@ public class FlowRuleChecker {
         return rule.getRater().canPass(selectedNode, acquireCount, prioritized);
     }
 
+    /**
+     * 这方法是干嘛的
+     * @param rule
+     * @param context
+     * @param node
+     * @return
+     */
     static Node selectReferenceNode(FlowRule rule, Context context, DefaultNode node) {
         String refResource = rule.getRefResource();
         int strategy = rule.getStrategy();
@@ -94,6 +113,7 @@ public class FlowRuleChecker {
         }
 
         if (strategy == RuleConstant.STRATEGY_RELATE) {
+            // 这里返回资源对应的集群节点
             return ClusterBuilderSlot.getClusterNode(refResource);
         }
 
@@ -112,19 +132,29 @@ public class FlowRuleChecker {
         return !RuleConstant.LIMIT_APP_DEFAULT.equals(origin) && !RuleConstant.LIMIT_APP_OTHER.equals(origin);
     }
 
+    /**
+     * 这里根据 当前数据对应的节点/上下文/Rule 生成一个新的节点
+     * @param rule
+     * @param context
+     * @param node
+     * @return
+     */
     static Node selectNodeByRequesterAndStrategy(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node) {
         // The limit app should not be empty.
         String limitApp = rule.getLimitApp();
         int strategy = rule.getStrategy();
         String origin = context.getOrigin();
 
+        // filterOrigin  代表 origin 不是 "default" "other"
         if (limitApp.equals(origin) && filterOrigin(origin)) {
+            // 如果使用的是直接策略 那么返回原节点
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 // Matches limit origin, return origin statistic node.
                 return context.getOriginNode();
             }
 
             return selectReferenceNode(rule, context, node);
+            // 这是按什么规则来的???
         } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp)) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 // Return the cluster node.
@@ -144,15 +174,28 @@ public class FlowRuleChecker {
         return null;
     }
 
+    /**
+     * 在集群模式下检测某个请求是否允许
+     * @param rule
+     * @param context
+     * @param node
+     * @param acquireCount
+     * @param prioritized
+     * @return
+     */
     private static boolean passClusterCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                             boolean prioritized) {
         try {
+            // 基于集群的检测要先获取服务器(客户端)对象
             TokenService clusterService = pickClusterService();
             if (clusterService == null) {
+                // 当没有找到服务器时   采用降级措施(使用本地检测)
                 return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
             }
             long flowId = rule.getClusterConfig().getFlowId();
+            // 发起请求并获得一个结果
             TokenResult result = clusterService.requestToken(flowId, acquireCount, prioritized);
+            // 处理本次结果
             return applyTokenResult(result, rule, context, node, acquireCount, prioritized);
             // If client is absent, then fallback to local mode.
         } catch (Throwable ex) {
@@ -163,6 +206,15 @@ public class FlowRuleChecker {
         return fallbackToLocalOrPass(rule, context, node, acquireCount, prioritized);
     }
 
+    /**
+     * 判断如果无法基于cluster进行检测时(或者失败时)  是否使用本地检测
+     * @param rule
+     * @param context
+     * @param node
+     * @param acquireCount
+     * @param prioritized
+     * @return
+     */
     private static boolean fallbackToLocalOrPass(FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                                  boolean prioritized) {
         if (rule.getClusterConfig().isFallbackToLocalWhenFail()) {
@@ -183,6 +235,16 @@ public class FlowRuleChecker {
         return null;
     }
 
+    /**
+     * 处理从集群获取到的信息
+     * @param result
+     * @param rule
+     * @param context
+     * @param node
+     * @param acquireCount
+     * @param prioritized
+     * @return
+     */
     private static boolean applyTokenResult(/*@NonNull*/ TokenResult result, FlowRule rule, Context context,
                                                          DefaultNode node,
                                                          int acquireCount, boolean prioritized) {

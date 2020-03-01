@@ -15,10 +15,20 @@
  */
 package com.alibaba.csp.sentinel.eagleeye;
 
+/**
+ * 类似于日志接口
+ */
 public abstract class EagleEyeAppender {
 
+    /**
+     * 在原有基础上追加日志信息
+     * @param log
+     */
     public abstract void append(String log);
 
+    /**
+     * 将信息写入到文件中
+     */
     public void flush() {
         // do nothing
     }

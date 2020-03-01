@@ -18,12 +18,16 @@ package com.alibaba.csp.sentinel.cluster.request;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群请求体
  */
 public class ClusterRequest<T> implements Request {
 
     private int id;
     private int type;
 
+    /**
+     * 本次请求携带的数据体
+     */
     private T data;
 
     public ClusterRequest() {}

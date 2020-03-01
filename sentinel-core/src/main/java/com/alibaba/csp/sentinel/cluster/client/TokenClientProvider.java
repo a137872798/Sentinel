@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.util.SpiLoader;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 用于生成访问集群用的client
  */
 public final class TokenClientProvider {
 
@@ -30,6 +31,7 @@ public final class TokenClientProvider {
 
     static {
         // Not strictly thread-safe, but it's OK since it will be resolved only once.
+        // 初始化client 对象
         resolveTokenClientInstance();
     }
 
@@ -37,6 +39,9 @@ public final class TokenClientProvider {
         return client;
     }
 
+    /**
+     * 使用SPI 机制加载Client实现类
+     */
     private static void resolveTokenClientInstance() {
         ClusterTokenClient resolvedClient = SpiLoader.loadFirstInstance(ClusterTokenClient.class);
         if (resolvedClient == null) {

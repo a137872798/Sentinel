@@ -33,6 +33,7 @@ public interface SphResourceTypeSupport {
      * @param args  extra parameters
      * @return new entry of the resource
      * @throws BlockException if the block criteria is met
+     * 将资源生成一个被保护的对象
      */
     Entry entryWithType(String name, int resourceType, EntryType entryType, int count, Object[] args)
         throws BlockException;
@@ -63,6 +64,7 @@ public interface SphResourceTypeSupport {
      * @param args  extra parameters
      * @return new entry of the resource
      * @throws BlockException if the block criteria is met
+     * 以异步方式保护方法
      */
     AsyncEntry asyncEntryWithType(String name, int resourceType, EntryType entryType, int count, boolean prioritized,
                                   Object[] args) throws BlockException;

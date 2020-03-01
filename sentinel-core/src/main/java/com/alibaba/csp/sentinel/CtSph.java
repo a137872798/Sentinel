@@ -39,6 +39,7 @@ import com.alibaba.csp.sentinel.slots.block.Rule;
  * @author leyou(lihao)
  * @author Eric Zhao
  * @see Sph
+ * 默认实现类
  */
 public class CtSph implements Sph {
 
@@ -47,38 +48,52 @@ public class CtSph implements Sph {
     /**
      * Same resource({@link ResourceWrapper#equals(Object)}) will share the same
      * {@link ProcessorSlotChain}, no matter in which {@link Context}.
+     * 维护 资源以及对应的处理链
      */
     private static volatile Map<ResourceWrapper, ProcessorSlotChain> chainMap
         = new HashMap<ResourceWrapper, ProcessorSlotChain>();
 
     private static final Object LOCK = new Object();
 
+    /**
+     * 将当前资源 包装成异步entry  默认情况下不传入 chain 对象
+     * @param resourceWrapper
+     * @param context
+     * @return
+     */
     private AsyncEntry asyncEntryWithNoChain(ResourceWrapper resourceWrapper, Context context) {
         AsyncEntry entry = new AsyncEntry(resourceWrapper, null, context);
+        // 这里会初始化一个 asyncContext  实际上与context指向同一个对象
         entry.initAsyncContext();
         // The async entry will be removed from current context as soon as it has been created.
+        // 这里让context 指向了 parent对象 而不再是 child对象(此时asyncContext还指向child对象)
         entry.cleanCurrentEntryInLocal();
         return entry;
     }
 
     private AsyncEntry asyncEntryWithPriorityInternal(ResourceWrapper resourceWrapper, int count, boolean prioritized,
                                                       Object... args) throws BlockException {
+        // 获取ThreadLocal 绑定的context 对象
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
             // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
             // so here init the entry only. No rule checking will be done.
+            // 当没有设置context时 触发该方法
             return asyncEntryWithNoChain(resourceWrapper, context);
         }
         if (context == null) {
             // Using default context.
+            // 为本地线程创建context对象 如果创建失败 则使用NullContext
             context = InternalContextUtil.internalEnter(Constants.CONTEXT_DEFAULT_NAME);
         }
 
         // Global switch is turned off, so no rule checking will be done.
+        // 当全局开关被关闭时  返回一个 没有处理链的 entry对象
         if (!Constants.ON) {
             return asyncEntryWithNoChain(resourceWrapper, context);
         }
 
+        // 开始加载资源对象的处理链
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         // Means processor cache size exceeds {@link Constants.MAX_SLOT_CHAIN_SIZE}, so no rule checking will be done.
@@ -86,8 +101,10 @@ public class CtSph implements Sph {
             return asyncEntryWithNoChain(resourceWrapper, context);
         }
 
+        // 使用处理链来生成entry对象
         AsyncEntry asyncEntry = new AsyncEntry(resourceWrapper, chain, context);
         try {
+            // 判断本次申请资源是否成功
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
             // Initiate the async context only when the entry successfully passed the slot chain.
             asyncEntry.initAsyncContext();
@@ -99,6 +116,7 @@ public class CtSph implements Sph {
             // The async context will not be initialized.
             asyncEntry.exitForContext(context, count, args);
             throw e1;
+            // 出现了其他异常
         } catch (Throwable e1) {
             // This should not happen, unless there are errors existing in Sentinel internal.
             // When this happens, async context is not initialized.
@@ -114,6 +132,15 @@ public class CtSph implements Sph {
         return asyncEntryWithPriorityInternal(resourceWrapper, count, false, args);
     }
 
+    /**
+     * 同步环境下包装资源
+     * @param resourceWrapper
+     * @param count
+     * @param prioritized
+     * @param args
+     * @return
+     * @throws BlockException
+     */
     private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
         throws BlockException {
         Context context = ContextUtil.getContext();
@@ -190,6 +217,7 @@ public class CtSph implements Sph {
      *
      * @param resourceWrapper target resource
      * @return {@link ProcessorSlotChain} of the resource
+     * 根据资源信息生成chain 对象
      */
     ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
@@ -198,10 +226,12 @@ public class CtSph implements Sph {
                 chain = chainMap.get(resourceWrapper);
                 if (chain == null) {
                     // Entry size limit.
+                    // 只有一定的资源能被熔断器管理
                     if (chainMap.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
                         return null;
                     }
 
+                    // 创建一个新的处理链
                     chain = SlotChainProvider.newSlotChain();
                     Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
                         chainMap.size() + 1);

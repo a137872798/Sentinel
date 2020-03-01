@@ -31,6 +31,7 @@ import com.alibaba.fastjson.JSONArray;
 
 /**
  * @author jialiang.linjl
+ * 根据类型来获取节点
  */
 @CommandMapping(name = "clusterNode", desc = "get all clusterNode VO, use type=notZero to ignore those nodes with totalRequest <=0")
 public class FetchSimpleClusterNodeCommandHandler implements CommandHandler<String> {
@@ -47,11 +48,13 @@ public class FetchSimpleClusterNodeCommandHandler implements CommandHandler<Stri
             return CommandResponse.ofSuccess(JSONArray.toJSONString(list));
         }
         for (Map.Entry<ResourceWrapper, ClusterNode> entry : map.entrySet()) {
+            // 如果要求的类型是notZero  必须确保 totalRequest > 0
             if ("notZero".equalsIgnoreCase(type)) {
                 if (entry.getValue().totalRequest() > 0) {
                     list.add(NodeVo.fromClusterNode(entry.getKey(), entry.getValue()));
                 }
             } else {
+                // 其他type 忽略
                 list.add(NodeVo.fromClusterNode(entry.getKey(), entry.getValue()));
             }
         }

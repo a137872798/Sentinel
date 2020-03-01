@@ -22,6 +22,7 @@ import java.util.Collection;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * token 相关的服务层   该接口属于cluster 层 也就是在集群中有一个中心节点 用于协调整个集群的数据(类似注册中心的特性)
  */
 public interface TokenService {
 
@@ -30,8 +31,10 @@ public interface TokenService {
      *
      * @param ruleId the unique rule ID
      * @param acquireCount token count to acquire
-     * @param prioritized whether the request is prioritized
+     * @param prioritized whether the request is prioritized   是否要优先处理
      * @return result of the token request
+     * ruleId 本身在整个cluster 中唯一确定  比如某个服务想要申请token 那么就需要从协调点查看能否正常申请成功 那么就需要传入能全局性定义的ruleId
+     * 那不是挺奇怪的么  协调节点相当于要接收相当于所有集群内节点的总请求量 那就没有做集群的意义了
      */
     TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized);
 
@@ -42,6 +45,7 @@ public interface TokenService {
      * @param acquireCount token count to acquire
      * @param params parameter list
      * @return result of the token request
+     * 使用一组额外的参数去尝试获取token
      */
     TokenResult requestParamToken(Long ruleId, int acquireCount, Collection<Object> params);
 }

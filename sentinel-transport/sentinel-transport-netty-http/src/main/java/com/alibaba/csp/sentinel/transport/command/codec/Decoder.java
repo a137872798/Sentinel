@@ -30,6 +30,7 @@ public interface Decoder<R> {
      *
      * @param clazz type of the class
      * @return {@code true} if supported, {@code false} otherwise
+     * 判断能否支持解码
      */
     boolean canDecode(Class<?> clazz);
 

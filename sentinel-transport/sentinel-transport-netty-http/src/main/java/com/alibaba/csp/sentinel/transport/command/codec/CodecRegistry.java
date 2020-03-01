@@ -20,6 +20,7 @@ import java.util.List;
 
 /**
  * @author Eric Zhao
+ * 该对象维护当前编解码列表
  */
 public final class CodecRegistry {
 

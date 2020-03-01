@@ -55,7 +55,9 @@ public class HeartbeatSenderInitFunc implements InitFunc {
             return;
         }
 
+        // 初始化定时器
         initSchedulerIfNeeded();
+        // 返回发送心跳的时间间隔
         long interval = retrieveInterval(sender);
         setIntervalIfNotExists(interval);
         scheduleHeartbeatTask(sender, interval);
@@ -83,6 +85,11 @@ public class HeartbeatSenderInitFunc implements InitFunc {
         }
     }
 
+    /**
+     * 在定时器中异步发送心跳任务
+     * @param sender
+     * @param interval
+     */
     private void scheduleHeartbeatTask(/*@NonNull*/ final HeartbeatSender sender, /*@Valid*/ long interval) {
         pool.scheduleAtFixedRate(new Runnable() {
             @Override

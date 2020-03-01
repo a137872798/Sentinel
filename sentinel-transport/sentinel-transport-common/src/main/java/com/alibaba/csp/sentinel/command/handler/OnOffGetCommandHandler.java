@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 
 /**
  * @author youji.zj
+ * 判断全局范围内 sentinel 是否属于启动状态
  */
 @CommandMapping(name = "getSwitch", desc = "get sentinel switch status")
 public class OnOffGetCommandHandler implements CommandHandler<String> {

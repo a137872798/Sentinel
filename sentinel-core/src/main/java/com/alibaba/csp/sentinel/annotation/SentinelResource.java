@@ -24,30 +24,35 @@ import java.lang.annotation.*;
  *
  * @author Eric Zhao
  * @since 0.1.1
+ * 基于注解对某个方法进行包装
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@Inherited
+@Inherited    // 该注解的含义是 被本注解修饰的类的子类会自动携带该注解
 public @interface SentinelResource {
 
     /**
      * @return name of the Sentinel resource
+     * 被包装资源的名字
      */
     String value() default "";
 
     /**
      * @return the entry type (inbound or outbound), outbound by default
+     * 代表被包装资源的类型 IN/OUT
      */
     EntryType entryType() default EntryType.OUT;
 
     /**
      * @return the classification (type) of the resource
      * @since 1.7.0
+     * 代表资源的类型(int)
      */
     int resourceType() default 0;
 
     /**
      * @return name of the block exception function, empty by default
+     * 当熔断器抛出阻塞异常时 会使用的方法   默认情况从本对象中找到对应方法
      */
     String blockHandler() default "";
 
@@ -58,11 +63,13 @@ public @interface SentinelResource {
      * must be static.
      *
      * @return the class where the block handler exists, should not provide more than one classes
+     * 代表从外部类中找到blockHandler
      */
     Class<?>[] blockHandlerClass() default {};
 
     /**
      * @return name of the fallback function, empty by default
+     * 降级方法
      */
     String fallback() default "";
 
@@ -73,6 +80,7 @@ public @interface SentinelResource {
      *
      * @return name of the default fallback method, empty by default
      * @since 1.6.0
+     * 默认降级方法
      */
     String defaultFallback() default "";
 
@@ -84,12 +92,14 @@ public @interface SentinelResource {
      *
      * @return the class where the fallback method is located (only single class)
      * @since 1.6.0
+     * 从外部类中寻找降级方法
      */
     Class<?>[] fallbackClass() default {};
 
     /**
      * @return the list of exception classes to trace, {@link Throwable} by default
      * @since 1.5.1
+     * 当遇到哪些异常时 会追踪轨迹  默认针对所有异常
      */
     Class<? extends Throwable>[] exceptionsToTrace() default {Throwable.class};
     
@@ -100,6 +110,7 @@ public @interface SentinelResource {
      *
      * @return the list of exception classes to ignore, empty by default
      * @since 1.6.0
+     * 某些异常将不会打印轨迹
      */
     Class<? extends Throwable>[] exceptionsToIgnore() default {};
 }

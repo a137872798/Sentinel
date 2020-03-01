@@ -27,6 +27,7 @@ import com.alibaba.fastjson.JSON;
 
 /**
  * @author qinan.qn
+ * 根据id 定位到某个节点 每个资源在集群模式下都会被封装成一个 ClusterNode
  */
 @CommandMapping(name = "clusterNodeById", desc = "get clusterNode VO by id, request param: id={resourceName}")
 public class FetchClusterNodeByIdCommandHandler implements CommandHandler<String> {

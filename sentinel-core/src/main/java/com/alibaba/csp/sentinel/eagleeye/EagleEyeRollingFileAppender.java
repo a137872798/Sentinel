@@ -25,6 +25,10 @@ import java.nio.channels.FileLock;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * 滚轮文件appender
+ * 该类就不细看了 基本就是将信息写入到文件中
+ */
 class EagleEyeRollingFileAppender extends EagleEyeAppender {
 
     private static final long LOG_FLUSH_INTERVAL = TimeUnit.SECONDS.toMillis(1);
@@ -41,6 +45,9 @@ class EagleEyeRollingFileAppender extends EagleEyeAppender {
 
     private final AtomicBoolean isRolling = new AtomicBoolean(false);
 
+    /**
+     * 输出到文件的输出流
+     */
     private BufferedOutputStream bos = null;
 
     private long nextFlushTime = 0L;
@@ -66,6 +73,9 @@ class EagleEyeRollingFileAppender extends EagleEyeAppender {
         setFile();
     }
 
+    /**
+     * 初始化文件信息
+     */
     private void setFile() {
         try {
             File logFile = new File(filePath);

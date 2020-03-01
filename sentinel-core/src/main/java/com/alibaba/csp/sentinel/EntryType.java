@@ -19,14 +19,17 @@ package com.alibaba.csp.sentinel;
  * An enum marks resource invocation direction.
  *
  * @author jialiang.linjl
+ * 代表资源的类型
  */
 public enum EntryType {
     /**
      * Inbound traffic
+     * 输入资源
      */
     IN("IN"),
     /**
      * Outbound traffic
+     * 输出资源
      */
     OUT("OUT");
 

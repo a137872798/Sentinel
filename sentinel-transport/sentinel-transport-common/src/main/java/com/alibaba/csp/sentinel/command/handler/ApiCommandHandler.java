@@ -33,6 +33,7 @@ import java.util.Map;
  *
  * @author houyi
  * @since 1.5.0
+ * 返回本机支持的所有api
  */
 @CommandMapping(name = "api", desc = "get all available command handlers")
 public class ApiCommandHandler implements CommandHandler<String> {

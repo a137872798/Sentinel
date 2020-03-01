@@ -18,13 +18,20 @@ package com.alibaba.csp.sentinel.cluster.response;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 本次的结果
  */
 public class ClusterResponse<T> implements Response {
 
     private int id;
     private int type;
+    /**
+     * 本次的结果码
+     */
     private int status;
 
+    /**
+     * 数据体
+     */
     private T data;
 
     public ClusterResponse() {}

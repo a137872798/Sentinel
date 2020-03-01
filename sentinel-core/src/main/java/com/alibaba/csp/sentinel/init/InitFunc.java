@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.init;
 
 /**
  * @author Eric Zhao
+ * 初始化接口 通过 SPI 机制来完成灵活适配
  */
 public interface InitFunc {
 

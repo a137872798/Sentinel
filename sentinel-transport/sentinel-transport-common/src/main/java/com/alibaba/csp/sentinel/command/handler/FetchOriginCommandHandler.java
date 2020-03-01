@@ -44,6 +44,7 @@ public class FetchOriginCommandHandler implements CommandHandler<String> {
 
         boolean exactly = false;
         for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
+            // 当找到匹配的资源时
             if (e.getKey().getName().equals(name)) {
                 cNode = e.getValue();
                 sb.append("id: ").append(e.getKey().getShowName()).append("\n");
@@ -53,6 +54,7 @@ public class FetchOriginCommandHandler implements CommandHandler<String> {
             }
         }
 
+        // 这里代表非精确查找
         if (!exactly) {
             for (Entry<ResourceWrapper, ClusterNode> e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) {
                 if (e.getKey().getName().indexOf(name) > 0) {

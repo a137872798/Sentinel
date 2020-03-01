@@ -65,6 +65,11 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
     private final CodecRegistry codecRegistry = new CodecRegistry();
 
+    /**
+     * 读取数据完毕后传播到下一环
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
@@ -74,11 +79,13 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         FullHttpRequest httpRequest = (FullHttpRequest)msg;
         try {
+            // 将请求体转换成 CommandRequest
             CommandRequest request = parseRequest(httpRequest);
             if (StringUtil.isBlank(HttpCommandUtils.getTarget(request))) {
                 writeErrorResponse(BAD_REQUEST.code(), "Invalid command", ctx);
                 return;
             }
+            // 根据request的 CommandRequest.name 找到对应的 handler 之后处理请求
             handleRequest(request, ctx, HttpUtil.isKeepAlive(httpRequest));
 
         } catch (Exception ex) {
@@ -90,9 +97,10 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     private void handleRequest(CommandRequest request, ChannelHandlerContext ctx, boolean keepAlive)
         throws Exception {
         String commandName = HttpCommandUtils.getTarget(request);
-        // Find the matching command handler.
+        // Find the matching command handler. 根据commandName 找到匹配的handler
         CommandHandler<?> commandHandler = getHandler(commandName);
         if (commandHandler != null) {
+            // 将处理完毕的结果写回到客户端
             CommandResponse<?> response = commandHandler.handle(request);
             writeResponse(response, ctx, keepAlive);
         } else {
@@ -165,12 +173,19 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
 
+    /**
+     * 从netty封装的httpRequest  中解析出 sentinel内部通信用的CommandRequest
+     * @param request
+     * @return
+     */
     private CommandRequest parseRequest(FullHttpRequest request) {
         QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
         CommandRequest serverRequest = new CommandRequest();
+        // 应该是 http://*** 后面携带的参数
         Map<String, List<String>> paramMap = queryStringDecoder.parameters();
         // Parse request parameters.
         if (!paramMap.isEmpty()) {
+            // 将参数转移到CommandRequest
             for (Entry<String, List<String>> p : paramMap.entrySet()) {
                 if (!p.getValue().isEmpty()) {
                     serverRequest.addParam(p.getKey(), p.getValue().get(0));

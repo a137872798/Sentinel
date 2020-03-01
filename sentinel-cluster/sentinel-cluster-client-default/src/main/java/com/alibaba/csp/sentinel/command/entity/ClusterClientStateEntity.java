@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.cluster.client.config.ClusterClientConfig;
 /**
  * @author Eric Zhao
  * @since 1.4.1
+ * 代表客户端状态的信息实体
  */
 public class ClusterClientStateEntity {
 

@@ -22,7 +22,12 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 鹰眼???
+ */
 public final class EagleEye {
+
+    // 各种从系统变量中获取的属性
 
     public static final String CLASS_LOCATION = getEagleEyeLocation();
 
@@ -38,9 +43,12 @@ public final class EagleEye {
 
     static final String EAGLEEYE_SELF_LOG_FILE = EagleEye.EAGLEEYE_LOG_DIR + "eagleeye-self.log";
 
-    // 200MB
+    // 200MB  默认的文件大小
     static final long MAX_SELF_LOG_FILE_SIZE = 200 * 1024 * 1024;
 
+    /**
+     * 生成 appender 对象
+     */
     static EagleEyeAppender selfAppender = createSelfLogger();
 
     static private TokenBucket exceptionBucket = new TokenBucket(10, TimeUnit.SECONDS.toMillis(10));
@@ -128,6 +136,10 @@ public final class EagleEye {
         }
     }
 
+    /**
+     * 创建appender  对象
+     * @return
+     */
     static private final EagleEyeAppender createSelfLogger() {
         EagleEyeRollingFileAppender selfAppender = new EagleEyeRollingFileAppender(EAGLEEYE_SELF_LOG_FILE,
             EagleEyeCoreUtils.getSystemPropertyForLong("EAGLEEYE.LOG.SELF.FILESIZE", MAX_SELF_LOG_FILE_SIZE),

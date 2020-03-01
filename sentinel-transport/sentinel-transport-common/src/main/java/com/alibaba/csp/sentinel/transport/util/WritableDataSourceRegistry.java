@@ -12,6 +12,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemRule;
  * Writable data source registry for modifying rules via HTTP API.
  *
  * @author Eric Zhao
+ * 数据源注册中心
  */
 public final class WritableDataSourceRegistry {
 

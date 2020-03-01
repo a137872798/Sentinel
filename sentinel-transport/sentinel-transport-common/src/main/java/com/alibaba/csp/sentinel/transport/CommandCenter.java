@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.transport;
 
 /**
  * @author Eric Zhao
+ * 命令中心
  */
 public interface CommandCenter {
 
@@ -25,6 +26,7 @@ public interface CommandCenter {
      * This will be executed before starting.
      *
      * @throws Exception if error occurs
+     * 前置钩子
      */
     void beforeStart() throws Exception;
 
@@ -33,6 +35,7 @@ public interface CommandCenter {
      * This method should NOT block.
      *
      * @throws Exception if error occurs
+     * 在后台启动一个命令中心
      */
     void start() throws Exception;
 
