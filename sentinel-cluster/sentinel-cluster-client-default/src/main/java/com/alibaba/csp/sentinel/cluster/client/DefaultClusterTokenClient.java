@@ -41,21 +41,30 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群客户端对象
  */
 public class DefaultClusterTokenClient implements ClusterTokenClient {
 
+    /**
+     * 内部应该是委托给该传输层client
+     */
     private ClusterTransportClient transportClient;
+    /**
+     * 包含描述信息
+     */
     private TokenServerDescriptor serverDescriptor;
 
     private final AtomicBoolean shouldStart = new AtomicBoolean(false);
 
     public DefaultClusterTokenClient() {
+        // 追加一个感应服务器地址发生变化的监听器
         ClusterClientConfigManager.addServerChangeObserver(new ServerChangeObserver() {
             @Override
             public void onRemoteServerChange(ClusterClientAssignConfig assignConfig) {
                 changeServer(assignConfig);
             }
         });
+        // 创建client 并连接到目标地址
         initNewConnection();
     }
 
@@ -85,11 +94,16 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         }
     }
 
+    /**
+     * 根据config修改server信息
+     * @param config
+     */
     private void changeServer(/*@Valid*/ ClusterClientAssignConfig config) {
         if (serverEqual(serverDescriptor, config)) {
             return;
         }
         try {
+            // 连接到新的地址
             if (transportClient != null) {
                 transportClient.stop();
             }
@@ -146,6 +160,13 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
         return serverDescriptor;
     }
 
+    /**
+     * 发起获取token的请求  并将结果包装成tokenResult
+     * @param flowId
+     * @param acquireCount
+     * @param prioritized
+     * @return
+     */
     @Override
     public TokenResult requestToken(Long flowId, int acquireCount, boolean prioritized) {
         if (notValidRequest(flowId, acquireCount)) {

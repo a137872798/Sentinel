@@ -40,12 +40,12 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  * @author youji.zj
  * @author jialiang.linjl
  * @author Eric Zhao
- * 管理断路的全局容器
+ * 降级规则管理器
  */
 public final class DegradeRuleManager {
 
     /**
-     * 同样一个资源可以被多个断路规则所限制
+     * 同样一个资源可以被多个降级规则所限制
      */
     private static final Map<String, Set<DegradeRule>> degradeRules = new ConcurrentHashMap<>();
 
@@ -91,6 +91,7 @@ public final class DegradeRuleManager {
 
         for (DegradeRule rule : rules) {
             if (!rule.passCheck(context, node, count)) {
+                // 降级是被阻断异常啊
                 throw new DegradeException(rule.getLimitApp(), rule);
             }
         }

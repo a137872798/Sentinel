@@ -28,10 +28,16 @@ import com.alibaba.fastjson.JSON;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * commandMapping  用于匹配command
  */
 @CommandMapping(name = "cluster/client/fetchConfig", desc = "get cluster client config")
 public class FetchClusterClientConfigHandler implements CommandHandler<String> {
 
+    /**
+     * 返回当前client 的信息
+     * @param request
+     * @return
+     */
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
         ClusterClientStateEntity stateVO = new ClusterClientStateEntity()

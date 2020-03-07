@@ -26,6 +26,7 @@ import com.alibaba.fastjson.JSON;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 根据 namespace 返回当前所有的flowRule
  */
 @CommandMapping(name = "cluster/server/flowRules", desc = "get cluster flow rules")
 public class FetchClusterFlowRulesCommandHandler implements CommandHandler<String> {

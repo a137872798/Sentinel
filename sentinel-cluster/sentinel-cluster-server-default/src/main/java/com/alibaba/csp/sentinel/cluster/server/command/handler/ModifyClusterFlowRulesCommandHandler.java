@@ -49,7 +49,9 @@ public class ModifyClusterFlowRulesCommandHandler implements CommandHandler<Stri
             data = URLDecoder.decode(data, "UTF-8");
             RecordLog.info("[ModifyClusterFlowRulesCommandHandler] Receiving cluster flow rules for namespace <{0}>: {1}", namespace, data);
 
+            // 修改 rule的数据以json格式传输
             List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
+            // 更新sentinelProp
             ClusterFlowRuleManager.loadRules(namespace, flowRules);
 
             return CommandResponse.ofSuccess(SUCCESS);

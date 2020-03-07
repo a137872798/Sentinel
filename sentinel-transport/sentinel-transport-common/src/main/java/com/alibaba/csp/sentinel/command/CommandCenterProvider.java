@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.util.SpiLoader;
  *
  * @author cdfive
  * @since 1.5.0
+ * 该jar包被core 间接引用 在首次接触到 Env时 便会开始进行初始化
  */
 public final class CommandCenterProvider {
 

@@ -299,6 +299,7 @@ public class SphU {
      */
     public static Entry entry(String name, int resourceType, EntryType type, Object[] args)
         throws BlockException {
+        //  默认申请的count 为1
         return Env.sph.entryWithType(name, resourceType, type, 1, args);
     }
 

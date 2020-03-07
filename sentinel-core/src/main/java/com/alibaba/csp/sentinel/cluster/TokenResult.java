@@ -32,7 +32,7 @@ public class TokenResult {
     private Integer status;
 
     /**
-     * 还剩余多少token
+     * 还剩余多少token未分配 (不包含这次)
      */
     private int remaining;
     /**

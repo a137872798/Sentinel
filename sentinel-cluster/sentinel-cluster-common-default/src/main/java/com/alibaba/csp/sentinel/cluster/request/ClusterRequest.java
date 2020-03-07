@@ -23,6 +23,9 @@ package com.alibaba.csp.sentinel.cluster.request;
 public class ClusterRequest<T> implements Request {
 
     private int id;
+    /**
+     * 本次请求的类型
+     */
     private int type;
 
     /**

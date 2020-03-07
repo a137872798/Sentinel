@@ -20,9 +20,13 @@ import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群模式下的数据统计bucket
  */
 public class ClusterMetricBucket {
 
+    /**
+     * 每个元素对应一个限流事件 (统计每个事件发生的次数)
+     */
     private final LongAdder[] counters;
 
     public ClusterMetricBucket() {

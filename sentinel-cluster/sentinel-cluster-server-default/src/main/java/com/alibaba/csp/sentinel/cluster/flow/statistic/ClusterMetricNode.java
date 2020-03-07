@@ -20,6 +20,7 @@ import java.util.Map;
 /**
  * @author Eric Zhao
  * @since 1.4.1
+ * 集群模式下的node对象 将某一资源包装后 会变成一个节点维护在一个树形结构下
  */
 public class ClusterMetricNode {
 

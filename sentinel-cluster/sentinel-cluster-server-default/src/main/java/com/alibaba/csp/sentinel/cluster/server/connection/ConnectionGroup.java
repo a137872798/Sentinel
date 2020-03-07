@@ -29,11 +29,15 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 连接组 代表连接到了某一namespace上
  */
 public class ConnectionGroup {
 
     private final String namespace;
 
+    /**
+     * 每个 desc 对象都包含了 addr host
+     */
     private final Set<ConnectionDescriptor> connectionSet = Collections.synchronizedSet(new HashSet<ConnectionDescriptor>());
     private final AtomicInteger connectedCount = new AtomicInteger();
 
@@ -46,6 +50,11 @@ public class ConnectionGroup {
         this(ServerConstants.DEFAULT_NAMESPACE);
     }
 
+    /**
+     * 为连接组增加某个连接
+     * @param address
+     * @return
+     */
     public ConnectionGroup addConnection(String address) {
         AssertUtil.notEmpty(address, "address cannot be empty");
 

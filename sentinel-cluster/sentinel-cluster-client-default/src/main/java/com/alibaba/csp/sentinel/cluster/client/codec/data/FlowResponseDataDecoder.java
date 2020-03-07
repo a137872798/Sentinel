@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBuf;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 从buffer中读取数据并写入到 bean中
  */
 public class FlowResponseDataDecoder implements EntityDecoder<ByteBuf, FlowTokenResponseData> {
 

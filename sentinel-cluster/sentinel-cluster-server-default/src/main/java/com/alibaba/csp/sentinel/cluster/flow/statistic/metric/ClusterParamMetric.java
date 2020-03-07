@@ -32,6 +32,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 参数统计对象  相当于做了泛化 不再是基于事件 而是基于参数
  */
 public class ClusterParamMetric {
 
@@ -74,6 +75,7 @@ public class ClusterParamMetric {
         if (value == null) {
             return;
         }
+        // 这里将event作为map.key  count 作为map.value
         CacheMap<Object, LongAdder> data = metric.currentWindow().value();
         LongAdder newCounter = new LongAdder();
         LongAdder currentCounter = data.putIfAbsent(value, newCounter);

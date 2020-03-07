@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  *
  * @author jialiang.linjl
  * @author leyou
+ * 根据当前系统运行状况对请求进行拦截 比如 当前cpu过高时 拒绝请求
  */
 public class SystemSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 

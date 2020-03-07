@@ -44,12 +44,23 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
         this.globalConnectionPool = globalConnectionPool;
     }
 
+    /**
+     * 当监听到新连接时
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        // 将channel包装成 Connection 对象
         globalConnectionPool.createConnection(ctx.channel());
         String remoteAddress = getRemoteAddress(ctx);
     }
 
+    /**
+     * 当检测到某个channel 断开连接时 从pool中移除connection
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String remoteAddress = getRemoteAddress(ctx);
@@ -57,6 +68,12 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
         ConnectionManager.removeConnection(remoteAddress);
     }
 
+    /**
+     * 每次读取到新数据时 都更新lastReadTime  配合 scanIdleConnectionTask 避免有效连接被关闭
+     * @param ctx
+     * @param msg
+     * @throws Exception
+     */
     @Override
     @SuppressWarnings("unchecked")
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -65,12 +82,14 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
             ClusterRequest request = (ClusterRequest)msg;
 
             // Client ping with its namespace, add to connection manager.
+            // 处理心跳检测
             if (request.getType() == ClusterConstants.MSG_TYPE_PING) {
                 handlePingRequest(ctx, request);
                 return;
             }
 
             // Pick request processor for request type.
+            // 正常的请求交由 processor 来处理
             RequestProcessor<?, ?> processor = RequestProcessorProvider.getProcessor(request.getType());
             if (processor == null) {
                 RecordLog.warn("[TokenServerHandler] No processor for request type: " + request.getType());
@@ -92,14 +111,22 @@ public class TokenServerHandler extends ChannelInboundHandlerAdapter {
         ctx.writeAndFlush(response);
     }
 
+    /**
+     * 处理心跳请求
+     * @param ctx
+     * @param request
+     */
     private void handlePingRequest(ChannelHandlerContext ctx, ClusterRequest request) {
+        // 看来心跳检测还需要携带数据
         if (request.getData() == null || StringUtil.isBlank((String)request.getData())) {
             writeBadResponse(ctx, request);
             return;
         }
+        // client 发送心跳包时 就是将namespace 发送过来
         String namespace = (String)request.getData();
         String clientAddress = getRemoteAddress(ctx);
         // Add the remote namespace to connection manager.
+        // 获取当前连接总数
         int curCount = ConnectionManager.addConnection(namespace, clientAddress).getConnectedCount();
         int status = ClusterConstants.RESPONSE_STATUS_OK;
         ClusterResponse<Integer> response = new ClusterResponse<>(request.getId(), request.getType(), status, curCount);

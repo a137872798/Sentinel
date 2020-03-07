@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  * @param <C> counter type
  * @author Eric Zhao
  * @since 1.4.0
+ * 基于ConcurrentLinkedHashMap的滑动窗口
  */
 public class ClusterParameterLeapArray<C> extends LeapArray<CacheMap<Object, C>> {
 

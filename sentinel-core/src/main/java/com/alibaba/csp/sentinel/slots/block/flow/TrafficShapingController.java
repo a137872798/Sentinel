@@ -21,7 +21,7 @@ import com.alibaba.csp.sentinel.node.Node;
  * A universal interface for traffic shaping controller.
  *
  * @author jialiang.linjl
- * 流量形状控制器???
+ * 流量控制器  FlowChecker 通过该对象来判断是否要限流
  */
 public interface TrafficShapingController {
 

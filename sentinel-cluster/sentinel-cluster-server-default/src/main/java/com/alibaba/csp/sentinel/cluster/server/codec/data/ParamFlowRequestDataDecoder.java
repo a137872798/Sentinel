@@ -52,6 +52,12 @@ public class ParamFlowRequestDataDecoder implements EntityDecoder<ByteBuf, Param
         return null;
     }
 
+    /**
+     * 每个参数都额外申请了1byte的长度 就是为了存放类型信息
+     * @param source
+     * @param params
+     * @return
+     */
     private boolean decodeParam(ByteBuf source, List<Object> params) {
         byte paramType = source.readByte();
 

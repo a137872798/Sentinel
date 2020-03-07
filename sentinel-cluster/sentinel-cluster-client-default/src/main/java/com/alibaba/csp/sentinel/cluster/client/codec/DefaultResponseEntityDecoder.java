@@ -41,6 +41,7 @@ public class DefaultResponseEntityDecoder implements ResponseEntityDecoder<ByteB
     @Override
     public ClusterResponse decode(ByteBuf source) {
         if (source.readableBytes() >= 6) {
+            // 这几个属性是提前设置到 byteBuffer中的 不需要通过decoder
             int xid = source.readInt();
             int type = source.readByte();
             int status = source.readByte();

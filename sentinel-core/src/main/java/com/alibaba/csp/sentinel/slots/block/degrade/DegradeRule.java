@@ -52,6 +52,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * </ul>
  *
  * @author jialiang.linjl
+ * 降级规则
  */
 public class DegradeRule extends AbstractRule {
 
@@ -61,6 +62,10 @@ public class DegradeRule extends AbstractRule {
 
     public DegradeRule() {}
 
+    /**
+     * 该规则限制的是哪个资源
+     * @param resourceName
+     */
     public DegradeRule(String resourceName) {
         setResource(resourceName);
     }
@@ -84,7 +89,7 @@ public class DegradeRule extends AbstractRule {
 
     /**
      * Minimum number of consecutive slow requests that can trigger RT circuit breaking.
-     * 能够触发断路的最小吞吐量  也就是首先可能超过了 count  之后只要 passCount小于该值 还是允许的
+     * 能够触发降级的最小吞吐量  也就是首先可能超过了 count  之后只要 passCount小于该值 还是允许的
      * @since 1.7.0
      */
     private int rtSlowRequestAmount = RuleConstant.DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT;
@@ -93,7 +98,7 @@ public class DegradeRule extends AbstractRule {
      * Minimum number of requests (in an active statistic time span) that can trigger circuit breaking.
      *
      * @since 1.7.0
-     * 基于QPS 的 只要单位时间内 totalQPS 小于该值就不做断路判断
+     * 基于QPS 的 只要单位时间内 totalQPS 小于该值就不做降级判断
      */
     private int minRequestAmount = RuleConstant.DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT;
 
@@ -219,7 +224,7 @@ public class DegradeRule extends AbstractRule {
             }
 
             // Sentinel will degrade the service only if count exceeds.
-            // 即使超过了阈值 只要passCount 小于 rtSlowRequestAmount 还是允许
+            // 即使超过了阈值 只要passCount 小于 rtSlowRequestAmount 还是允许  这个就是所谓的缓冲 没有严格按照阈值来
             if (passCount.incrementAndGet() < rtSlowRequestAmount) {
                 return true;
             }

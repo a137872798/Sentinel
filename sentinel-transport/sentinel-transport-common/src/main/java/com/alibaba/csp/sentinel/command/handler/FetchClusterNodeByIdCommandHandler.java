@@ -32,6 +32,12 @@ import com.alibaba.fastjson.JSON;
 @CommandMapping(name = "clusterNodeById", desc = "get clusterNode VO by id, request param: id={resourceName}")
 public class FetchClusterNodeByIdCommandHandler implements CommandHandler<String> {
 
+    /**
+     * 如果本机就是中心节点 那么可以获取到node信息 否则会返回空
+     * 然后整个sentinel集群中 每个节点都会启动一个 HttpServer 以Http协议的方式 获取sentinel信息
+     * @param request the request to handle
+     * @return
+     */
     @Override
     public CommandResponse<String> handle(CommandRequest request) {
         String id = request.getParam("id");

@@ -31,6 +31,9 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群模式下服务端的初始化配置信息
+ * 当sentinel的每个节点启动时 因为都有可能变成server 或者client 那么相关的配置要提前设置好
+ * 而一个节点是 server/client 是由用户发送特定命令来确定的 这样可以跳过注册中心
  */
 public class DefaultClusterServerInitFunc implements InitFunc {
 

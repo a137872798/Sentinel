@@ -48,6 +48,7 @@ public class ModifyClusterServerFlowConfigHandler implements CommandHandler<Stri
             if (StringUtil.isEmpty(namespace)) {
                 RecordLog.info("[ModifyClusterServerFlowConfigHandler] Receiving cluster server global flow config: " + data);
                 ServerFlowConfig config = JSON.parseObject(data, ServerFlowConfig.class);
+                // 配置数据也是以json格式传输
                 if (!ClusterServerConfigManager.isValidFlowConfig(config)) {
                     CommandResponse.ofFailure(new IllegalArgumentException("Bad flow config"));
                 }

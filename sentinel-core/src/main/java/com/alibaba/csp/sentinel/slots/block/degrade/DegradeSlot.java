@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * A {@link ProcessorSlot} dedicates to {@link DegradeRule} checking.
  *
  * @author leyou
+ * 这里判断是否要用降级策略  不是叫fallback吗???
  */
 public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 

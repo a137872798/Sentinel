@@ -71,6 +71,15 @@ public class CtSph implements Sph {
         return entry;
     }
 
+    /**
+     * 以异步模式执行
+     * @param resourceWrapper
+     * @param count
+     * @param prioritized
+     * @param args
+     * @return
+     * @throws BlockException
+     */
     private AsyncEntry asyncEntryWithPriorityInternal(ResourceWrapper resourceWrapper, int count, boolean prioritized,
                                                       Object... args) throws BlockException {
         // 获取ThreadLocal 绑定的context 对象
@@ -133,7 +142,7 @@ public class CtSph implements Sph {
     }
 
     /**
-     * 同步环境下包装资源
+     * 包装资源
      * @param resourceWrapper
      * @param count
      * @param prioritized
@@ -143,23 +152,29 @@ public class CtSph implements Sph {
      */
     private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
         throws BlockException {
+        // 获取本线程绑定的上下文  注意在tomcat的环境 每个资源都会被绑定在线程池的线程执行 那么在执行完毕后 应该要卸载掉context  否则会影响下次调用
+        // 实际上存在嵌套的场景 比如调用了一个 @SentinelResource 包裹的函数后 又间接调用了另一个@SentinelResource 的 那么此时context 还没有释放
+        // 当然一开始也可以通过 ContextUtil.enter 手动设置上下文
         Context context = ContextUtil.getContext();
+        // 如果绑定的是一个空的上下文 那么不需要设置 chain
         if (context instanceof NullContext) {
             // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
             // so here init the entry only. No rule checking will be done.
             return new CtEntry(resourceWrapper, null, context);
         }
 
+        // 这里开始初始化上下文
         if (context == null) {
             // Using default context.
             context = InternalContextUtil.internalEnter(Constants.CONTEXT_DEFAULT_NAME);
         }
 
-        // Global switch is close, no rule checking will do.
+        // Global switch is close, no rule checking will do.  全局开关被关闭时  不需要设置chain 也就不会有rule检查了
         if (!Constants.ON) {
             return new CtEntry(resourceWrapper, null, context);
         }
 
+        // 每个 resourceWrapper都对应唯一的处理链
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         /*
@@ -174,6 +189,7 @@ public class CtSph implements Sph {
         try {
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {
+            // 当检测到异常时 自动抛出 没抛出异常代表申请成功
             e.exit(count, args);
             throw e1;
         } catch (Throwable e1) {

@@ -10,6 +10,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  * @author xuyue
  * @author Eric Zhao
  * @since 1.4.0
+ * 检测空闲连接的任务
  */
 public class ScanIdleConnectionTask implements Runnable {
 
@@ -22,6 +23,7 @@ public class ScanIdleConnectionTask implements Runnable {
     @Override
     public void run() {
         try {
+            // 获取检测的时间间隔
             int idleSeconds = ClusterServerConfigManager.getIdleSeconds();
             long idleTimeMillis = idleSeconds * 1000;
             if (idleTimeMillis < 0) {
@@ -30,6 +32,7 @@ public class ScanIdleConnectionTask implements Runnable {
             long now = System.currentTimeMillis();
             List<Connection> connections = connectionPool.listAllConnection();
             for (Connection conn : connections) {
+                // netty不是自带一个idleHandler 吗
                 if ((now - conn.getLastReadTime()) > idleTimeMillis) {
                     RecordLog.info(
                         String.format("[ScanIdleConnectionTask] The connection <%s:%d> has been idle for <%d>s. "

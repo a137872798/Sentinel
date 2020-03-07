@@ -71,6 +71,7 @@ public class DefaultController implements TrafficShapingController {
                 currentTime = TimeUtil.currentTimeMillis();
                 // 计算要等待多久才能申请到足够的token
                 waitInMs = node.tryOccupyNext(currentTime, acquireCount, count);
+                // 在规定的时间范围内 允许等待
                 if (waitInMs < OccupyTimeoutProperty.getOccupyTimeout()) {
                     // 添加一个等待中的请求
                     node.addWaitingRequest(currentTime + waitInMs, acquireCount);
@@ -79,6 +80,7 @@ public class DefaultController implements TrafficShapingController {
                     sleep(waitInMs);
 
                     // PriorityWaitException indicates that the request will pass after waiting for {@link @waitInMs}.
+                    // 那么比如针对某个资源有多个限流规则要判定 但是遇到第一个并在这里抛出异常后 直接到被捕获的地方 而不走后面的限流规则了???
                     throw new PriorityWaitException(waitInMs);
                 }
             }

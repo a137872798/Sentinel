@@ -63,6 +63,8 @@ public abstract class Entry implements AutoCloseable {
     private Node curNode;
     /**
      * {@link Node} of the specific origin, Usually the origin is the Service Consumer.
+     * 如果当前上下文指定了 origin 信息 那么在ClusterBuilderSlot 中 会为clusterNode追加一个originNode
+     * 这个节点是干嘛用的
      */
     private Node originNode;
     private Throwable error;

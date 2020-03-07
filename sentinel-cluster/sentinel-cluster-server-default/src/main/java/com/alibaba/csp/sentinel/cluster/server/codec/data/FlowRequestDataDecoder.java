@@ -30,9 +30,15 @@ import io.netty.buffer.ByteBuf;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 限流请求解码器
  */
 public class FlowRequestDataDecoder implements EntityDecoder<ByteBuf, FlowRequestData> {
 
+    /**
+     * flowId 对应rule 以及请求多少token 以及是否设置优先级
+     * @param source source stream
+     * @return
+     */
     @Override
     public FlowRequestData decode(ByteBuf source) {
         if (source.readableBytes() >= 12) {

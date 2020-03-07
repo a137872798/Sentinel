@@ -286,6 +286,7 @@ public final class SystemRuleManager {
      *
      * @param resourceWrapper the resource.
      * @throws BlockException when any system rule's threshold is exceeded.
+     * 通过  SystemRule 进行校验
      */
     public static void checkSystem(ResourceWrapper resourceWrapper) throws BlockException {
         if (resourceWrapper == null) {
@@ -297,11 +298,13 @@ public final class SystemRuleManager {
         }
 
         // for inbound traffic only
+        // 只检查输入数据 类似于 netty的 inbound 和 outbound
         if (resourceWrapper.getEntryType() != EntryType.IN) {
             return;
         }
 
-        // total qps
+        // total qps  该节点统计总的 in 数据  如果每秒处理的请求数 (这里值从 enter 到 exit) 的值过高 那么会拒绝本次请求
+        // 返回的同样是 BlockException的子类
         double currentQps = Constants.ENTRY_NODE == null ? 0.0 : Constants.ENTRY_NODE.successQps();
         if (currentQps > qps) {
             throw new SystemBlockException(resourceWrapper.getName(), "qps");
@@ -319,6 +322,7 @@ public final class SystemRuleManager {
         }
 
         // load. BBR algorithm.
+        // 定期获得系统负载并判断是否超过了最大值
         if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
             if (!checkBbr(currentThread)) {
                 throw new SystemBlockException(resourceWrapper.getName(), "load");

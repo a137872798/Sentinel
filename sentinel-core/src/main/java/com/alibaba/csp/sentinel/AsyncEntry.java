@@ -56,9 +56,10 @@ public class AsyncEntry extends CtEntry {
         if (originalContext != null) {
             // 获取当前上下文绑定的entry 对象
             Entry curEntry = originalContext.getCurEntry();
-            // 将context的 entry 指向父对象
+            // 此时原始的context curEntry一定是指向该对象的  在 该对象的构造器中会自动修改context指向的entry
             if (curEntry == this) {
                 Entry parent = this.parent;
+                // 这里要移除 原本context的curEntry  也就是一旦开启异步 它不会跟之前的调用链共享一个上下文 而是单独获得了一个上下文
                 originalContext.setCurEntry(parent);
                 if (parent != null) {
                     ((CtEntry)parent).child = null;
@@ -87,7 +88,7 @@ public class AsyncEntry extends CtEntry {
                 asyncContext = context;
                 return;
             }
-            // 将context 包装成 asyncContext   这时 context，asyncContext 都指向同一个node
+            // 该对象内部同时包含 context 和异步的context
             this.asyncContext = Context.newAsyncContext(context.getEntranceNode(), context.getName())
                 .setOrigin(context.getOrigin())
                 .setCurEntry(this);

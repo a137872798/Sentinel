@@ -33,9 +33,13 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 作为 nettyServer的一个开关
  */
 public class SentinelDefaultTokenServer implements ClusterTokenServer {
 
+    /**
+     * 是否使用嵌套模式
+     */
     private final boolean embedded;
 
     private ClusterTokenServer server;
@@ -43,6 +47,7 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
     private final AtomicBoolean shouldStart = new AtomicBoolean(false);
 
     static {
+        // 初始化编解码器等
         InitExecutor.doInit();
     }
 
@@ -50,6 +55,10 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
         this(false);
     }
 
+    /**
+     * 默认该节点只能作为 server 自身不能执行业务
+     * @param embedded
+     */
     public SentinelDefaultTokenServer(boolean embedded) {
         this.embedded = embedded;
         ClusterServerConfigManager.addTransportConfigChangeObserver(new ServerTransportConfigObserver() {
@@ -81,6 +90,7 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
             return;
         }
         try {
+            // 使用新端口重启服务器
             if (server != null) {
                 stopServer();
             }
@@ -114,6 +124,11 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
         }
     }
 
+    // 为什么只有嵌套模式需要这样做呢???
+
+    /**
+     * 如果是嵌套模式下进行停机
+     */
     private void handleEmbeddedStop() {
         String namespace = ConfigSupplierRegistry.getNamespaceSupplier().get();
         if (StringUtil.isNotEmpty(namespace)) {
@@ -121,7 +136,12 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
         }
     }
 
+    /**
+     * 以嵌套 模式启动的时候还要注册连接
+     */
     private void handleEmbeddedStart() {
+        // client 去哪个server判断本次限流结果 就是通过namespace 来划分的  也就是每个服务器会有自己的namespace
+        // (当然一个jvm上可以启动多个server)
         String namespace = ConfigSupplierRegistry.getNamespaceSupplier().get();
         if (StringUtil.isNotEmpty(namespace)) {
             // Mark server global mode as embedded.

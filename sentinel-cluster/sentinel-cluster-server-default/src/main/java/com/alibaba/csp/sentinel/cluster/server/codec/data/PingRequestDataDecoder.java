@@ -22,6 +22,8 @@ import io.netty.buffer.ByteBuf;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 看来 该心跳模式是  所有client 发往server
+ * TODO 如果心跳检测失效了 又该怎么处理???
  */
 public class PingRequestDataDecoder implements EntityDecoder<ByteBuf, String> {
 

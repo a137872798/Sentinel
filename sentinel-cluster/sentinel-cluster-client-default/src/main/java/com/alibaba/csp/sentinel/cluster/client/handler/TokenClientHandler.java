@@ -33,10 +33,14 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * sentinel 客户端请求处理器
  */
 public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     private final AtomicInteger currentState;
+    /**
+     * 当感应到连接断开时触发的回调
+     */
     private final Runnable disconnectCallback;
 
     public TokenClientHandler(AtomicInteger currentState, Runnable disconnectCallback) {
@@ -46,25 +50,38 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        // 标记成活跃状态
         currentState.set(ClientConstants.CLIENT_STATUS_STARTED);
         fireClientPing(ctx);
         RecordLog.info("[TokenClientHandler] Client handler active, remote address: " + getRemoteAddress(ctx));
     }
 
+    /**
+     * 处理响应结果
+     * @param ctx
+     * @param msg
+     * @throws Exception
+     */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ClusterResponse) {
             ClusterResponse<?> response = (ClusterResponse) msg;
 
+            // 处理心跳
             if (response.getType() == ClusterConstants.MSG_TYPE_PING) {
                 handlePingResponse(ctx, response);
                 return;
             }
 
+            // 在命令池中处理结果
             TokenClientPromiseHolder.completePromise(response.getId(), response);
         }
     }
 
+    /**
+     * 当连接被激活时  立即发送心跳包
+     * @param ctx
+     */
     private void fireClientPing(ChannelHandlerContext ctx) {
         // Data body: namespace of the client.
         ClusterRequest<String> ping = new ClusterRequest<String>().setId(0)
@@ -93,6 +110,11 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
         RecordLog.info("[TokenClientHandler] Client handler inactive, remote address: " + getRemoteAddress(ctx));
     }
 
+    /**
+     * 当检测到channel 被关闭时触发回调
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         RecordLog.info("[TokenClientHandler] Client channel unregistered, remote address: " + getRemoteAddress(ctx));

@@ -26,6 +26,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetricStorage;
 /**
  * @author Eric Zhao
  * @since 0.2.0
+ * 针对热点参数进行限流
  */
 public class ParamFlowStatisticEntryCallback implements ProcessorSlotEntryCallback<DefaultNode> {
 

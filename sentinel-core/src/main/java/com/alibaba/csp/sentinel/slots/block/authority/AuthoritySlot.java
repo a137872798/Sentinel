@@ -29,7 +29,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  *
  * @author leyou
  * @author Eric Zhao
- * 处理槽
+ * 黑白名单校验  这里校验失败时抛出的是 BlockException的子类 那么在 StatisticSlot 层 会被记录一个 block
  */
 public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 

@@ -24,6 +24,7 @@ import java.util.Set;
  * @param <V> type of the value
  * @author Eric Zhao
  * @since 0.2.0
+ * 携带缓存功能的map
  */
 public interface CacheMap<K, V> {
 

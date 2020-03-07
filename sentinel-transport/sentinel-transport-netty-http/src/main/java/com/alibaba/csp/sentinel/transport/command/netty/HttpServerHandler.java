@@ -96,6 +96,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
     private void handleRequest(CommandRequest request, ChannelHandlerContext ctx, boolean keepAlive)
         throws Exception {
+        // 在http请求头中额外携带了命令类型
         String commandName = HttpCommandUtils.getTarget(request);
         // Find the matching command handler. 根据commandName 找到匹配的handler
         CommandHandler<?> commandHandler = getHandler(commandName);

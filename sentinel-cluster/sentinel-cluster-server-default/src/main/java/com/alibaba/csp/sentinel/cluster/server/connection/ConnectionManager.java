@@ -31,6 +31,7 @@ public final class ConnectionManager {
 
     /**
      * Connection map (namespace, connection).
+     * 记录连接到某个namespace 的连接数
      */
     private static final Map<String, ConnectionGroup> CONN_MAP = new ConcurrentHashMap<>();
     /**

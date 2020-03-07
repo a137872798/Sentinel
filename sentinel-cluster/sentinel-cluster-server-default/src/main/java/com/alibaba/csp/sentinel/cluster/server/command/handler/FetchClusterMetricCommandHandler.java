@@ -26,6 +26,7 @@ import com.alibaba.fastjson.JSON;
 /**
  * @author Eric Zhao
  * @since 1.4.1
+ * 找到某一namespace下所有的测量对象
  */
 @CommandMapping(name = "cluster/server/metricList", desc = "get cluster server metrics")
 public class FetchClusterMetricCommandHandler implements CommandHandler<String> {

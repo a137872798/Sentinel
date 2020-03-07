@@ -39,6 +39,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 @SuppressWarnings("rawtypes")
 public final class HttpServer {
 
+    /**
+     * 本机以8719 作为监听命令行的服务器端口  至于与主功能分开是为了解耦
+     */
     private static final int DEFAULT_PORT = 8719;
 
     private Channel channel;
@@ -81,6 +84,7 @@ public final class HttpServer {
                 int newPort = getNewPort(port, retryCount);
                 try {
                     channelFuture = b.bind(newPort).sync();
+                    // 在本机的全局配置中设置相关信息
                     TransportConfig.setRuntimePort(newPort);
                     CommandCenterLog.info("[NettyHttpCommandCenter] Begin listening at port " + newPort);
                     break;

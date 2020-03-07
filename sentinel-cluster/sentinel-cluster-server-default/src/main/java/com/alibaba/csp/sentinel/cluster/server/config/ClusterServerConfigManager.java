@@ -240,6 +240,7 @@ public final class ClusterServerConfigManager {
         if (oldSet != null && !oldSet.isEmpty()) {
             for (String ns : oldSet) {
                 // Remove the cluster rule property for deprecated namespace set.
+                // 将旧的 namespace 下的rule全部移除掉
                 if (!newSet.contains(ns)) {
                     ClusterFlowRuleManager.removeProperty(ns);
                     ClusterParamFlowRuleManager.removeProperty(ns);

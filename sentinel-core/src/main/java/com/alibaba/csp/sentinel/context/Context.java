@@ -54,6 +54,7 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * @see ContextUtil
  * @see NodeSelectorSlot
  * 在调用某个资源的过程中使用的上下文对象
+ * 并发调用某一资源时 通过 ThreadLocal 来解决并发问题
  */
 public class Context {
 
@@ -187,6 +188,7 @@ public class Context {
      * Get the parent {@link Node} of the current.
      *
      * @return the parent node of the current.
+     * 返回该上下文关联的最上层节点
      */
     public Node getLastNode() {
         if (curEntry != null && curEntry.getLastNode() != null) {

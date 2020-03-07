@@ -57,6 +57,7 @@ import io.netty.util.concurrent.GenericFutureListener;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群模式下用于与server 交互的client对象
  */
 public class NettyTransportClient implements ClusterTransportClient {
 
@@ -64,17 +65,29 @@ public class NettyTransportClient implements ClusterTransportClient {
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("sentinel-cluster-transport-client-scheduler"));
 
+    /**
+     * 当检测到断开连接时 重连的间隔时间
+     */
     public static final int RECONNECT_DELAY_MS = 2000;
 
     private final String host;
     private final int port;
 
+    /**
+     * netty 底层通信类
+     */
     private Channel channel;
     private NioEventLoopGroup eventLoopGroup;
+    /**
+     * 该对象负责处理接收到的数据流
+     */
     private TokenClientHandler clientHandler;
 
     private final AtomicInteger idGenerator = new AtomicInteger(0);
     private final AtomicInteger currentState = new AtomicInteger(ClientConstants.CLIENT_STATUS_OFF);
+    /**
+     * 记录连接失败次数
+     */
     private final AtomicInteger failConnectedTime = new AtomicInteger(0);
 
     private final AtomicBoolean shouldRetry = new AtomicBoolean(true);
@@ -86,6 +99,10 @@ public class NettyTransportClient implements ClusterTransportClient {
         this.port = port;
     }
 
+    /**
+     * 初始化引导程序
+     * @return
+     */
     private Bootstrap initClientBootstrap() {
         Bootstrap b = new Bootstrap();
         eventLoopGroup = new NioEventLoopGroup();
@@ -101,6 +118,7 @@ public class NettyTransportClient implements ClusterTransportClient {
 
                     ChannelPipeline pipeline = ch.pipeline();
                     pipeline.addLast(new LengthFieldBasedFrameDecoder(1024, 0, 2, 0, 2));
+                    // decoder/encoder 都委托到sentinel 内部实现
                     pipeline.addLast(new NettyResponseDecoder());
                     pipeline.addLast(new LengthFieldPrepender(2));
                     pipeline.addLast(new NettyRequestEncoder());
@@ -111,6 +129,10 @@ public class NettyTransportClient implements ClusterTransportClient {
         return b;
     }
 
+    /**
+     * 开始连接到 内部维护的服务器地址
+     * @param b
+     */
     private void connect(Bootstrap b) {
         if (currentState.compareAndSet(ClientConstants.CLIENT_STATUS_OFF, ClientConstants.CLIENT_STATUS_PENDING)) {
             b.connect(host, port)
@@ -134,12 +156,16 @@ public class NettyTransportClient implements ClusterTransportClient {
         }
     }
 
+    /**
+     * 当检测到channel.unregister时触发的回调
+     */
     private Runnable disconnectCallback = new Runnable() {
         @Override
         public void run() {
             if (!shouldRetry.get()) {
                 return;
             }
+            // 在一定延时后 触发一次
             SCHEDULER.schedule(new Runnable() {
                 @Override
                 public void run() {
@@ -167,6 +193,9 @@ public class NettyTransportClient implements ClusterTransportClient {
         connect(initClientBootstrap());
     }
 
+    /**
+     * 关闭当前已经打开的 channel eventLoopGroup 等
+     */
     private void cleanUp() {
         if (channel != null) {
             channel.close();
@@ -205,6 +234,12 @@ public class NettyTransportClient implements ClusterTransportClient {
         return channel != null && clientHandler != null && clientHandler.hasStarted();
     }
 
+    /**
+     * 发送请求时  要加入到响应池中
+     * @param request
+     * @return
+     * @throws Exception
+     */
     @Override
     public ClusterResponse sendRequest(ClusterRequest request) throws Exception {
         if (!isReady()) {
@@ -219,6 +254,7 @@ public class NettyTransportClient implements ClusterTransportClient {
 
             channel.writeAndFlush(request);
 
+            // 获取绑定在该channel 上的promise 对象 并将映射关系保存到响应池中
             ChannelPromise promise = channel.newPromise();
             TokenClientPromiseHolder.putPromise(xid, promise);
 

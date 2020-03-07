@@ -150,7 +150,7 @@ public abstract class LeapArray<T> {
          * Get bucket item at given time from the array.
          *
          * (1) Bucket is absent, then just create a new bucket and CAS update to circular array.  // 当前bucket还没有创建 那么通过cas将newBucket添加到槽中
-         * (2) Bucket is up-to-date, then just return the bucket. // 如果当前时间对应的槽已经创建了 那么直接返回
+         * (2) Bucket is up-to-date, then just return the bucket. // 如果当前时间对应的槽已经创建了 那么直接返回0
          * (3) Bucket is deprecated, then reset current bucket and clean all deprecated buckets.  // 如果当前时间对应的bucket已经被废弃 那么重置当前bucket
          * 并且丢弃所有已经废弃的bucket
          */
@@ -195,7 +195,7 @@ public abstract class LeapArray<T> {
                  * that means the time is within the bucket, so directly return the bucket.
                  */
                 return old;
-            // 代表时间窗口已经发生了滑动
+            // 因为整个是轮式结构 这样代表 发生了覆盖 那么就要将旧的窗口数据重置  就像 ringBuffer
             } else if (windowStart > old.windowStart()) {
                 /*
                  *   (old)

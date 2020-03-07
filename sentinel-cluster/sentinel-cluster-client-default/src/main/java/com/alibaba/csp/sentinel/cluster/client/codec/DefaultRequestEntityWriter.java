@@ -27,6 +27,8 @@ import io.netty.buffer.ByteBuf;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 将集群端请求写入到byteBuffer 中
+ * 该对象只是做一个转发 实际上根据request.getType 定位到具体的请求写入对象
  */
 public class DefaultRequestEntityWriter implements RequestEntityWriter<ClusterRequest, ByteBuf> {
 

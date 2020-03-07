@@ -27,6 +27,7 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  * @param <T> type of the rule
  * @author Eric Zhao
  * @since 1.4.0
+ * 基于命名空间的限流属性
  */
 class NamespaceFlowProperty<T> {
 

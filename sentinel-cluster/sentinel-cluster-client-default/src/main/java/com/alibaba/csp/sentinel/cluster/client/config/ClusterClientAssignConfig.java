@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.cluster.client.config;
 /**
  * @author Eric Zhao
  * @since 1.4.1
+ * 集群中 中心节点的 地址 应该可以借助注册中心获取
  */
 public class ClusterClientAssignConfig {
 

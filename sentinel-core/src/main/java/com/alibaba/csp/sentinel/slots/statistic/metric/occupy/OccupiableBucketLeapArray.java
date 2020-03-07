@@ -31,7 +31,8 @@ import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
 
     /**
-     * 每次都会先尝试访问该容器  当使用优先模式时 申请token 发现可以在等待一定时间后满足条件 那么就会将信息添加到该对象中
+     * 每次都会先尝试访问该容器  当使用优先模式时 申请token
+     * 发现可以在等待一定时间后满足条件 那么就会将信息添加到该对象中  也就是优先占用下一个时间窗口的token
      */
     private final FutureBucketLeapArray borrowArray;
 

@@ -31,6 +31,7 @@ import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWra
  *
  * @author Eric Zhao
  * @since 0.2.0
+ * 记录参数的统计信息
  */
 public class ParameterMetric {
 
@@ -172,6 +173,10 @@ public class ParameterMetric {
         }
     }
 
+    /**
+     * 增加某组参数的调用次数
+     * @param args
+     */
     @SuppressWarnings("rawtypes")
     public void addThreadCount(Object... args) {
         if (args == null) {

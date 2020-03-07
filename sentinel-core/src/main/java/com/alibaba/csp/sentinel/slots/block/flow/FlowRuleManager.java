@@ -109,6 +109,12 @@ public class FlowRuleManager {
         return flowRules.containsKey(resource);
     }
 
+    /**
+     * 每个规则在保存时  以 resource 作为key
+     * @param origin
+     * @param resourceName
+     * @return
+     */
     public static boolean isOtherOrigin(String origin, String resourceName) {
         if (StringUtil.isEmpty(origin)) {
             return false;

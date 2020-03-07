@@ -33,8 +33,6 @@ public interface TokenService {
      * @param acquireCount token count to acquire
      * @param prioritized whether the request is prioritized   是否要优先处理
      * @return result of the token request
-     * ruleId 本身在整个cluster 中唯一确定  比如某个服务想要申请token 那么就需要从协调点查看能否正常申请成功 那么就需要传入能全局性定义的ruleId
-     * 那不是挺奇怪的么  协调节点相当于要接收相当于所有集群内节点的总请求量 那就没有做集群的意义了
      */
     TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized);
 

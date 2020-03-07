@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.util.SpiLoader;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 编解码器提供者
  */
 public final class ServerEntityCodecProvider {
 
@@ -33,6 +34,7 @@ public final class ServerEntityCodecProvider {
         resolveInstance();
     }
 
+    // 通过SPI机制加载编解码器
     private static void resolveInstance() {
         ResponseEntityWriter writer = SpiLoader.loadFirstInstance(ResponseEntityWriter.class);
         if (writer == null) {

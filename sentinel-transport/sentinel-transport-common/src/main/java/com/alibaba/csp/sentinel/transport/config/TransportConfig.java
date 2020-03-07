@@ -33,6 +33,9 @@ public class TransportConfig {
 
     public static final String HEARTBEAT_DEFAULT_PATH = "/registry/machine";
 
+    /**
+     * 记录本机的命令中心所占用的端口
+     */
     private static int runtimePort = -1;
 
     /**

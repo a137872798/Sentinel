@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 /**
  * @author Eric Zhao
  * @since 1.4.1
+ * 请求限流器
  */
 public class RequestLimiter {
 
@@ -78,7 +79,12 @@ public class RequestLimiter {
         return this;
     }
 
+    /**
+     * 判断是否允许某个请求
+     * @return
+     */
     public boolean tryPass() {
+        // 因为读取的是快照数据 所以可能会有实际处理数据比限流的量要大的情况
         if (canPass()) {
             add(1);
             return true;

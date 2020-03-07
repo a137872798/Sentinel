@@ -33,6 +33,7 @@ public class Env {
 
     static {
         // If init fails, the process will exit.
+        // 首次调用 SphU.Env 时 会触发 doInit() 的执行
         InitExecutor.doInit();
     }
 

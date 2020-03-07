@@ -43,6 +43,10 @@ import com.alibaba.fastjson.TypeReference;
  */
 public class FileDataSourceInit implements InitFunc {
 
+    /**
+     * 相当于初始化时从指定目录加载json字符串 并转换成rule
+     * @throws Exception
+     */
     @Override
     public void init() throws Exception {
         // A fake path.

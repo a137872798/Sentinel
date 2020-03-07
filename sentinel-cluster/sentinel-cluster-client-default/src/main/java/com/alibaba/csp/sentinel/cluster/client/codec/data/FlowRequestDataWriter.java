@@ -27,6 +27,7 @@ import io.netty.buffer.ByteBuf;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 负责向 byteBuf 中写入数据 流量相关的请求体中包含 全局流量id  请求的token数量 以及 优先级
  */
 public class FlowRequestDataWriter implements EntityWriter<FlowRequestData, ByteBuf> {
 

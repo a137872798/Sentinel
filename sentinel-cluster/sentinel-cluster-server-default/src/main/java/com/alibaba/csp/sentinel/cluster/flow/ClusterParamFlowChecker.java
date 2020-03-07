@@ -39,18 +39,28 @@ public final class ClusterParamFlowChecker {
         return GlobalRequestLimiter.tryPass(namespace);
     }
 
+    /**
+     * 相比 clusterParamFlowCheck 就是多了一组参数
+     * @param rule
+     * @param count
+     * @param values
+     * @return
+     */
     static TokenResult acquireClusterToken(ParamFlowRule rule, int count, Collection<Object> values) {
         Long id = rule.getClusterConfig().getFlowId();
 
+        // 如果在 qps 这层被拦截了返回  TOO_MANY_REQUEST
         if (!allowProceed(id)) {
             return new TokenResult(TokenResultStatus.TOO_MANY_REQUEST);
         }
 
+        // 找到统计数据
         ClusterParamMetric metric = ClusterParamMetricStatistics.getMetric(id);
         if (metric == null) {
             // Unexpected state, return FAIL.
             return new TokenResult(TokenResultStatus.FAIL);
         }
+        // 当参数为空时 总是请求成功
         if (values == null || values.isEmpty()) {
             // Empty parameter list will always pass.
             return new TokenResult(TokenResultStatus.OK);
@@ -60,6 +70,7 @@ public final class ClusterParamFlowChecker {
         Object blockObject = null;
         for (Object value : values) {
             double latestQps = metric.getAvg(value);
+            // 根据当前规则来计算 全局阈值  只要有一个参数 对应的qps不满足条件 本次申请token的操作就失败了
             double threshold = calcGlobalThreshold(rule, value);
             double nextRemaining = threshold - latestQps - count;
             remaining = nextRemaining;
@@ -70,6 +81,7 @@ public final class ClusterParamFlowChecker {
             }
         }
 
+        // 为每个参数增加qps  param实际上就相当于泛化了
         if (hasPassed) {
             for (Object value : values) {
                 metric.addValue(value, count);
@@ -78,6 +90,7 @@ public final class ClusterParamFlowChecker {
         } else {
             ClusterServerStatLogUtil.log(String.format("param|block|%d|%s", id, blockObject));
         }
+        // 如果本次请求携带多个 param 那么 remaining统一返回 -1
         if (values.size() > 1) {
             // Remaining field is unsupported for multi-values.
             remaining = -1;

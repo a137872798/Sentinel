@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 标记请求的类型
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.cluster.client.config;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 一组监控服务器发生变化的观察者
  */
 public interface ServerChangeObserver {
 

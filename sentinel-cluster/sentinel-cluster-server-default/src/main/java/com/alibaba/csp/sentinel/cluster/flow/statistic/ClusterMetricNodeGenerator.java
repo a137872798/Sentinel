@@ -33,21 +33,27 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 /**
  * @author Eric Zhao
  * @since 1.4.1
+ * 该对象负责生成 ClusterMetricNode
  */
 public class ClusterMetricNodeGenerator {
 
     public static Map<String, List<ClusterMetricNode>> generateCurrentNodeMap(String namespace) {
         Map<String, List<ClusterMetricNode>> map = new HashMap<>();
+        // 获取该namespace 下管理的所有流量对象
         Set<Long> flowIds = ClusterFlowRuleManager.getFlowIdSet(namespace);
+        // 另一组限流对象
         Set<Long> paramFlowIds = ClusterParamFlowRuleManager.getFlowIdSet(namespace);
         for (Long id : flowIds) {
+            // flowId -> flowRule -> node 一一对应的关系
             ClusterMetricNode node = flowToMetricNode(id);
             if (node == null) {
                 continue;
             }
+            // 将节点信息都保存到map中
             putToMap(map, node);
         }
         for (Long id : paramFlowIds) {
+            // 从另一个容器中获取node
             ClusterMetricNode node = paramToMetricNode(id);
             if (node == null) {
                 continue;
@@ -58,6 +64,11 @@ public class ClusterMetricNodeGenerator {
         return map;
     }
 
+    /**
+     * 以resourceName 作为key 保存node信息
+     * @param map
+     * @param node
+     */
     private static void putToMap(Map<String, List<ClusterMetricNode>> map, ClusterMetricNode node) {
         List<ClusterMetricNode> nodeList = map.get(node.getResourceName());
         if (nodeList == null) {
@@ -67,7 +78,13 @@ public class ClusterMetricNodeGenerator {
         nodeList.add(node);
     }
 
+    /**
+     * 根据 flowId 找到对应的规则对象
+     * @param flowId
+     * @return
+     */
     public static ClusterMetricNode flowToMetricNode(long flowId) {
+        // 获取对应的规则 以及统计数据的槽
         FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(flowId);
         if (rule == null) {
             return null;

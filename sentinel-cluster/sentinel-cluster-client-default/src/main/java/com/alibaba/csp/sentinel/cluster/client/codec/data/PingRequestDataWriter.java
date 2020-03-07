@@ -26,6 +26,11 @@ import io.netty.buffer.ByteBuf;
  */
 public class PingRequestDataWriter implements EntityWriter<String, ByteBuf> {
 
+    /**
+     * 心跳包也是有携带数据的 (entity)
+     * @param entity
+     * @param target
+     */
     @Override
     public void writeTo(String entity, ByteBuf target) {
         if (StringUtil.isBlank(entity) || target == null) {

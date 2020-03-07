@@ -32,6 +32,7 @@ import com.alibaba.fastjson.JSON;
 /**
  * @author leyou
  * 从root 节点开始往下 将所有资源的统计数据都展示出来
+ * Root节点本身就是一个 clusterNode
  */
 @CommandMapping(name = "jsonTree", desc = "get tree node VO start from root node")
 public class FetchJsonTreeCommandHandler implements CommandHandler<String> {

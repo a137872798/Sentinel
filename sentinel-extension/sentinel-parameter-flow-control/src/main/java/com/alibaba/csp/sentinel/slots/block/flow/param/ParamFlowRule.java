@@ -72,6 +72,7 @@ public class ParamFlowRule extends AbstractRule {
 
     /**
      * Parsed exclusion items of parameters. Only for internal use.
+     * 每个参数对应的qps
      */
     private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
 

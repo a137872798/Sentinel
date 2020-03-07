@@ -27,6 +27,9 @@ import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
  */
 public class ClusterMetricLeapArray extends LeapArray<ClusterMetricBucket> {
 
+    /**
+     * 统计已经被提前占用的事件的数量
+     */
     private final LongAdder[] occupyCounter;
     private boolean hasOccupied = false;
 
@@ -44,6 +47,12 @@ public class ClusterMetricLeapArray extends LeapArray<ClusterMetricBucket> {
         return new ClusterMetricBucket();
     }
 
+    /**
+     * 进入到该方法时 已经做好并发处理了
+     * @param w
+     * @param startTime  the start time of the bucket in milliseconds
+     * @return
+     */
     @Override
     protected WindowWrap<ClusterMetricBucket> resetWindowTo(WindowWrap<ClusterMetricBucket> w, long startTime) {
         w.resetTo(startTime);
@@ -52,10 +61,18 @@ public class ClusterMetricLeapArray extends LeapArray<ClusterMetricBucket> {
         return w;
     }
 
+    /**
+     * 新的窗口在创建时 就将之前被抢占的请求设置到bucket中
+     * @param bucket
+     */
     private void transferOccupyToBucket(/*@Valid*/ ClusterMetricBucket bucket) {
+        // 如果当前处在被占用的状态 那么将占用的数据转移到新的buffer中
         if (hasOccupied) {
+            // 将occupy桶中Pass的数量累加到newBucket的occupyPass上
             transferOccupiedCount(bucket, ClusterFlowEvent.PASS, ClusterFlowEvent.OCCUPIED_PASS);
+            // 将occupy桶中Pass的数量累加到newBucket的pass上
             transferOccupiedThenReset(bucket, ClusterFlowEvent.PASS);
+            // 将occupy桶中PASS_REQUEST的数量累加到newBucket的PASS_REQUEST上
             transferOccupiedThenReset(bucket, ClusterFlowEvent.PASS_REQUEST);
             hasOccupied = false;
         }
@@ -68,6 +85,8 @@ public class ClusterMetricLeapArray extends LeapArray<ClusterMetricBucket> {
     private void transferOccupiedThenReset(ClusterMetricBucket bucket, ClusterFlowEvent event) {
         bucket.add(event, occupyCounter[event.ordinal()].sumThenReset());
     }
+
+    // occupy对应那些设置了优先标识的req  当本次已经没有足够的token获取了 就抢先占领下个时间窗口的token
 
     public void addOccupyPass(int count) {
         occupyCounter[ClusterFlowEvent.PASS.ordinal()].add(count);

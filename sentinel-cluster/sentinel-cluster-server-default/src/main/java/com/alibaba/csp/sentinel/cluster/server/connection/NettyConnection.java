@@ -23,6 +23,7 @@ import io.netty.channel.Channel;
 /**
  * @author xuyue
  * @since 1.4.0
+ * 将 netty.channel 封装成连接对象
  */
 public class NettyConnection implements Connection {
 
@@ -74,6 +75,9 @@ public class NettyConnection implements Connection {
         return remoteIp + ":" + remotePort;
     }
 
+    /**
+     * 当连接被关闭时 会从pool中移除掉该对象
+     */
     @Override
     public void close() {
         // Remove from connection pool.

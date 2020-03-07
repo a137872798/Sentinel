@@ -28,6 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 拉取中心节点
  */
 @CommandMapping(name = "cluster/server/fetchConfig", desc = "get cluster server config")
 public class FetchClusterServerConfigHandler implements CommandHandler<String> {
@@ -52,6 +53,10 @@ public class FetchClusterServerConfigHandler implements CommandHandler<String> {
         return CommandResponse.ofSuccess(config.toJSONString());
     }
 
+    /**
+     * 当没有携带 namespace时 获取的就是全局范围的config
+     * @return
+     */
     private CommandResponse<String> globalConfigResult() {
         ServerTransportConfig transportConfig = new ServerTransportConfig()
             .setPort(ClusterServerConfigManager.getPort())

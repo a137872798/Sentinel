@@ -30,6 +30,7 @@ import com.alibaba.csp.sentinel.init.InitOrder;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 如果引入了这个模块 那么在启动 core包时 会触发该init方法
  */
 @InitOrder(0)
 public class DefaultClusterClientInitFunc implements InitFunc {

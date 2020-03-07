@@ -72,7 +72,8 @@ class CtEntry extends Entry {
         if (context instanceof NullContext) {
             return;
         }
-        // 如果传入的上下文对象 已经包含一个entry 了 那么那个entry 将会作为父对象 也就是本对象会沿父对象的一些数据
+        // 如果传入的上下文对象 已经包含一个entry 了 那么那个entry 将会作为父对象
+        // 对应到应用场景就是发生了 嵌套调用Sentinel 包裹的资源
         this.parent = context.getCurEntry();
         if (parent != null) {
             ((CtEntry)parent).child = this;
@@ -99,8 +100,8 @@ class CtEntry extends Entry {
             if (context instanceof NullContext) {
                 return;
             }
-            // 假设 某context 先绑定到 父级entry 后 又绑定到子级entry  那么此时 父级entry 尝试exit 那么 会从子级开始递归调用exit
-            // 并在最后抛出异常
+            // 这里调用时机不恰当 本来恰是 A.enter->B.enter->B.exit->A.exit 或者 A.enter->A.exit->B.enter->B.exit
+            // 这里却出现 A.enter->B.enter->A.exit->B.exit  这里生成异常信息并抛出
             if (context.getCurEntry() != this) {
                 String curEntryNameInContext = context.getCurEntry() == null ? null : context.getCurEntry().getResourceWrapper().getName();
                 // Clean previous call stack.
@@ -142,7 +143,7 @@ class CtEntry extends Entry {
     }
 
     /**
-     * 当使用资源结束后 通过该方法 进行统计
+     * 当使用资源结束后 调用该方法释放token
      * @param count tokens to release.
      * @param args extra parameters
      * @return
@@ -150,6 +151,7 @@ class CtEntry extends Entry {
      */
     @Override
     protected Entry trueExit(int count, Object... args) throws ErrorEntryFreeException {
+        // 如果发生嵌套的情况 那么将 context 当前指向的node 变成父节点 同时完结本节点的统计工作
         exitForContext(context, count, args);
 
         return parent;

@@ -135,7 +135,7 @@ import com.alibaba.csp.sentinel.util.function.Function;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
- * 限流槽
+ * 限流槽  用户自定义的限流规则 都是通过 FlowRuleManager 使用的 逻辑就是在这里触发
  */
 public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
@@ -162,6 +162,7 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
+        // 委托给check对象来判断是否满足条件
         checkFlow(resourceWrapper, context, node, count, prioritized);
 
         fireEntry(context, resourceWrapper, node, count, prioritized, args);

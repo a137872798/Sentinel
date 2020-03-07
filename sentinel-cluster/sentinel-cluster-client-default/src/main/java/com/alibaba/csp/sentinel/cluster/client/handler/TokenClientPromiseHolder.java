@@ -26,6 +26,8 @@ import io.netty.channel.ChannelPromise;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 相当于响应池 每个发出的请求都会在这里保存对应的 future(promise)对象
+ * sentinel TokenClient 始终使用同步模式阻塞等待结果 所以不需要后台线程扫描超时对象
  */
 public final class TokenClientPromiseHolder {
 
@@ -43,6 +45,13 @@ public final class TokenClientPromiseHolder {
         PROMISE_MAP.remove(xid);
     }
 
+    /**
+     * 代表 某个请求id对应的响应体已经收到
+     * @param xid
+     * @param response
+     * @param <T>
+     * @return
+     */
     public static <T> boolean completePromise(int xid, ClusterResponse<T> response) {
         if (!PROMISE_MAP.containsKey(xid)) {
             return false;

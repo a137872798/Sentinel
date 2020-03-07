@@ -35,6 +35,7 @@ import io.netty.channel.Channel;
  * @author xuyue
  * @author Eric Zhao
  * @since 1.4.0
+ * 连接池对象 用于管理连接
  */
 public class ConnectionPool {
 
@@ -43,6 +44,7 @@ public class ConnectionPool {
 
     /**
      * Format: ("ip:port", connection)
+     * 地址 与 连接对象
      */
     private final Map<String, Connection> CONNECTION_MAP = new ConcurrentHashMap<String, Connection>();
 
@@ -51,6 +53,10 @@ public class ConnectionPool {
      */
     private ScheduledFuture scanTaskFuture = null;
 
+    /**
+     * 将 netty的channel 封装成Connection 对象
+     * @param channel
+     */
     public void createConnection(Channel channel) {
         if (channel != null) {
             Connection connection = new NettyConnection(channel, this);
@@ -62,6 +68,7 @@ public class ConnectionPool {
 
     /**
      * Start the scan task for long-idle connections.
+     * 当 任务还没有创建的时候 (或者任务已经结束) 那么让定时器执行一个任务
      */
     private synchronized void startScan() {
         if (scanTaskFuture == null
@@ -77,6 +84,7 @@ public class ConnectionPool {
      *
      * @param channel channel
      * @return formatted key
+     * 将远端地址 拼接起来
      */
     private String getConnectionKey(Channel channel) {
         InetSocketAddress socketAddress = (InetSocketAddress)channel.remoteAddress();

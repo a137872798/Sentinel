@@ -99,7 +99,7 @@ public class ClusterNode extends StatisticNode {
      * @param origin The caller's name, which is designated in the {@code parameter} parameter
      *               {@link ContextUtil#enter(String name, String origin)}.
      * @return the {@link Node} of the specific origin
-     * 添加映射关系
+     * origin 对应 app的名字 这样限流就可以按照这个维度进行了
      */
     public Node getOrCreateOriginNode(String origin) {
         StatisticNode statisticNode = originCountMap.get(origin);
@@ -109,7 +109,6 @@ public class ClusterNode extends StatisticNode {
                 statisticNode = originCountMap.get(origin);
                 if (statisticNode == null) {
                     // The node is absent, create a new node for the origin.
-                    // 这个copyOnWrite 的套路跟kafka 一样  不过为什么不考虑使用ConcurrentHashMap呢
                     statisticNode = new StatisticNode();
                     HashMap<String, StatisticNode> newMap = new HashMap<>(originCountMap.size() + 1);
                     newMap.putAll(originCountMap);

@@ -47,6 +47,7 @@ import static com.alibaba.csp.sentinel.cluster.server.ServerConstants.*;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 传输层 server
  */
 public class NettyTransportServer implements ClusterTokenServer {
 
@@ -90,6 +91,7 @@ public class NettyTransportServer implements ClusterTokenServer {
                     p.addLast(new NettyRequestDecoder());
                     p.addLast(new LengthFieldPrepender(2));
                     p.addLast(new NettyResponseEncoder());
+                    // 核心就是这一行 在 channelRead中 将数据转发给了业务层处理
                     p.addLast(new TokenServerHandler(connectionPool));
                 }
             })

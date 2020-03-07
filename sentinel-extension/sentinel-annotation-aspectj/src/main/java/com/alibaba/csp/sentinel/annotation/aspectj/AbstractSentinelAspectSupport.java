@@ -70,6 +70,12 @@ public abstract class AbstractSentinelAspectSupport {
         return false;
     }
 
+    /**
+     * 当使用基于 @SentinelResource 注解时 从注解中获取信息 并生成 resourceName
+     * @param resourceName
+     * @param method
+     * @return
+     */
     protected String getResourceName(String resourceName, /*@NonNull*/ Method method) {
         // If resource name is present in annotation, use this value.
         if (StringUtil.isNotBlank(resourceName)) {
@@ -137,6 +143,14 @@ public abstract class AbstractSentinelAspectSupport {
         throw ex;
     }
 
+    /**
+     * 调用注解中的阻塞处理方法
+     * @param pjp
+     * @param annotation
+     * @param ex
+     * @return
+     * @throws Throwable
+     */
     protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
         throws Throwable {
 
@@ -240,11 +254,13 @@ public abstract class AbstractSentinelAspectSupport {
         boolean mustStatic = locationClass != null && locationClass.length >= 1;
         Class<?> clazz;
         if (mustStatic) {
+            // 从参数列表中找到目标类
             clazz = locationClass[0];
         } else {
-            // By default current class.
+            // By default current class.  未设置的话代表方法就在本类
             clazz = pjp.getTarget().getClass();
         }
+        // 这里做了缓存 避免多次反射
         MethodWrapper m = ResourceMetadataRegistry.lookupBlockHandler(clazz, name);
         if (m == null) {
             // First time, resolve the block handler.

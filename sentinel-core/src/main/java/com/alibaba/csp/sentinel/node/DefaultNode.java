@@ -37,7 +37,7 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  *
  * @author qinan.qn
  * @see NodeSelectorSlot
- * 一个默认的节点对象 继承自StatisticNode 代表具备最基本的统计能力
+ * 该节点对应 代表被封装的资源
  */
 public class DefaultNode extends StatisticNode {
 
@@ -55,7 +55,7 @@ public class DefaultNode extends StatisticNode {
 
     /**
      * Associated cluster node.
-     * 该node 关联到集群中哪个node
+     * cluster 代表 在jvm级别下 资源对应的node信息
      */
     private ClusterNode clusterNode;
 

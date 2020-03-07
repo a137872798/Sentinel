@@ -33,6 +33,7 @@ import com.alibaba.csp.sentinel.transport.config.TransportConfig;
  * Global init function for heartbeat sender.
  *
  * @author Eric Zhao
+ * 启动时 还会定时发送心跳
  */
 @InitOrder(-1)
 public class HeartbeatSenderInitFunc implements InitFunc {

@@ -26,9 +26,13 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 用于注册 processor
  */
 public final class RequestProcessorProvider {
 
+    /**
+     * 注解会携带一个 integer 信息
+     */
     private static final Map<Integer, RequestProcessor> PROCESSOR_MAP = new ConcurrentHashMap<>();
 
     private static final ServiceLoader<RequestProcessor> SERVICE_LOADER = ServiceLoaderUtil.getServiceLoader(

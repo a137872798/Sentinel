@@ -27,10 +27,17 @@ import com.alibaba.csp.sentinel.cluster.TokenService;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 嵌套模式的服务器 也就是该节点即包含服务器也包含客户端
  */
 public class DefaultEmbeddedTokenServer implements EmbeddedClusterTokenServer {
 
+    /**
+     * 该对象对应业务层的抽象 处理收到的数据
+     */
     private final TokenService tokenService = TokenServiceProvider.getService();
+    /**
+     * 该对象负责接收请求
+     */
     private final ClusterTokenServer server = new SentinelDefaultTokenServer(true);
 
     @Override

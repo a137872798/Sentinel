@@ -124,6 +124,12 @@ public class ContextUtil {
         return trueEnter(name, origin);
     }
 
+    /**
+     * 为当前线程绑定上下文
+     * @param name
+     * @param origin
+     * @return
+     */
     protected static Context trueEnter(String name, String origin) {
         Context context = contextHolder.get();
         // 如果当前线程没有绑定context
@@ -145,9 +151,9 @@ public class ContextUtil {
                                 setNullContext();
                                 return NULL_CONTEXT;
                             } else {
-                                // 添加新的映射关系
+                                // 注意这里创建的叫做entranceNode
                                 node = new EntranceNode(new StringResourceWrapper(name, EntryType.IN), null);
-                                // Add entrance node.  直接添加到Root
+                                // Add entrance node.  直接添加到Root  根据节点是为了方便直接查看全局数据
                                 Constants.ROOT.addChild(node);
 
                                 Map<String, DefaultNode> newMap = new HashMap<>(contextNameNodeMap.size() + 1);

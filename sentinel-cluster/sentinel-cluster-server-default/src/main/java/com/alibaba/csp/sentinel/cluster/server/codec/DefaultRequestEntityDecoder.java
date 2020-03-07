@@ -35,15 +35,19 @@ import io.netty.buffer.ByteBuf;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 接收数据并转换成请求对象  而client端是接收数据并解析成res 对象
  */
 public class DefaultRequestEntityDecoder implements RequestEntityDecoder<ByteBuf, ClusterRequest> {
 
     @Override
     public ClusterRequest decode(ByteBuf source) {
         if (source.readableBytes() >= 5) {
+            // 代表请求id
             int xid = source.readInt();
+            // 代表请求类型
             int type = source.readByte();
 
+            // 更底层的 编码器 用于解析数据流
             EntityDecoder<ByteBuf, ?> dataDecoder = RequestDataDecodeRegistry.getDecoder(type);
             if (dataDecoder == null) {
                 RecordLog.warn("Unknown type of request data decoder: {0}", type);

@@ -46,6 +46,8 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  *
  * @author Eric Zhao
  * @since 1.4.0
+ * 全局范围的 限流规则管理器 (看来只要server 单节点维护rule信息就可以 其他client通过网络交互获取必备信息 那么难点就在于服务器节点请求负载大
+ * 因为在统计数据时 都要汇总到server上)
  */
 public final class ClusterFlowRuleManager {
 
@@ -76,6 +78,7 @@ public final class ClusterFlowRuleManager {
      * <pre>
      * ruleId -> namespace -> connection group -> connected count
      * </pre>
+     * 某个规则去哪个namespace 找
      */
     private static final Map<Long, String> FLOW_NAMESPACE_MAP = new ConcurrentHashMap<>();
 
@@ -95,6 +98,9 @@ public final class ClusterFlowRuleManager {
         initDefaultProperty();
     }
 
+    /**
+     * 初始化相关属性
+     */
     private static void initDefaultProperty() {
         // The server should always support default namespace,
         // so register a default property for default namespace.
@@ -320,6 +326,11 @@ public final class ClusterFlowRuleManager {
         return FLOW_NAMESPACE_MAP.get(flowId);
     }
 
+    /**
+     * 监听到一组规则插入时
+     * @param list
+     * @param namespace
+     */
     private static void applyClusterFlowRule(List<FlowRule> list, /*@Valid*/ String namespace) {
         if (list == null || list.isEmpty()) {
             clearAndResetRulesFor(namespace);
@@ -338,6 +349,7 @@ public final class ClusterFlowRuleManager {
                     "[ClusterFlowRuleManager] Ignoring invalid flow rule when loading new flow rules: " + rule);
                 continue;
             }
+            // 如果未设置 limitApp的情况 这里会插入默认的 limitApp
             if (StringUtil.isBlank(rule.getLimitApp())) {
                 rule.setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
             }
@@ -369,6 +381,9 @@ public final class ClusterFlowRuleManager {
         NAMESPACE_FLOW_ID_MAP.put(namespace, flowIdSet);
     }
 
+    /**
+     * 监听器绑定在namespace上
+     */
     private static final class FlowRulePropertyListener implements PropertyListener<List<FlowRule>> {
 
         private final String namespace;

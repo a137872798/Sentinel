@@ -31,6 +31,7 @@ import com.alibaba.csp.sentinel.transport.CommandCenter;
  * Implementation of {@link CommandCenter} based on Netty HTTP library.
  *
  * @author Eric Zhao
+ * 应该是启动一个接收命令行的服务器
  */
 @SpiOrder(SpiOrder.LOWEST_PRECEDENCE - 100)
 public class NettyHttpCommandCenter implements CommandCenter {
@@ -50,6 +51,7 @@ public class NettyHttpCommandCenter implements CommandCenter {
      */
     @Override
     public void start() throws Exception {
+        // 启动服务器的线程会被阻塞
         pool.submit(new Runnable() {
             @Override
             public void run() {

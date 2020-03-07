@@ -29,11 +29,12 @@ public interface SphResourceTypeSupport {
      * @param name the unique name of the protected resource
      * @param resourceType the classification of the resource
      * @param entryType the traffic entry type (IN/OUT) of the resource
-     * @param count tokens required
+     * @param count tokens required   默认为1
      * @param args  extra parameters
      * @return new entry of the resource
      * @throws BlockException if the block criteria is met
      * 将资源生成一个被保护的对象
+     * 在进入该方法前 因为访问到 Env 所以惰性触发 initFunc
      */
     Entry entryWithType(String name, int resourceType, EntryType entryType, int count, Object[] args)
         throws BlockException;

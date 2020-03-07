@@ -28,6 +28,7 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
 /**
  * @author qinan.qn
+ * 如果本机是集群模式的中心节点 那么可以获取到 clusterNode信息 否则获取不到
  */
 @CommandMapping(name = "cnode", desc = "get clusterNode metrics by id, request param: id={resourceName}")
 public class FetchClusterNodeHumanCommandHandler implements CommandHandler<String> {

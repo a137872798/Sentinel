@@ -18,9 +18,13 @@ package com.alibaba.csp.sentinel.cluster.client.config;
 /**
  * @author Eric Zhao
  * @since 1.4.0
+ * 集群相关配置
  */
 public class ClusterClientConfig {
 
+    /**
+     * 请求超时时间
+     */
     private Integer requestTimeout;
 
     public Integer getRequestTimeout() {

@@ -75,7 +75,6 @@ public class FlowRule extends AbstractRule {
 
     /**
      * Reference resource in flow control with relevant resource or context.
-     * 引用的资源
      */
     private String refResource;
 

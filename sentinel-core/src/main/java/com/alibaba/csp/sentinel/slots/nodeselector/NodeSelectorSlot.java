@@ -121,7 +121,8 @@ import java.util.Map;
  * @author jialiang.linjl
  * @see EntranceNode
  * @see ContextUtil
- * 节点选择器
+ * 节点选择器  可以理解为第一个处理slot
+ * 注意是每个资源对应一个处理链
  */
 public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
@@ -150,11 +151,17 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
          * so what is the fastest way to get total statistics of the same resource?
          * The answer is all {@link DefaultNode}s with same resource name share one
          * {@link ClusterNode}. See {@link ClusterBuilderSlot} for detail.
+         * 一个资源可以在多个 context下执行 而每个context 会对应一个DefaultNode 也就是一个资源可以对应多个DefaultNode
+         * 那么怎样可以最快的获取某个资源总统计数据   就是通过resourceName 找到 clusterNode  它是以资源名为维度统计数据
          */
+        // 首先找到上下文对应的node节点
         DefaultNode node = map.get(context.getName());
+
+        // 总结一下这段逻辑 原本在全局范围内每个context 以name作为key 会维护一个EntranceNode 方便统计所有子节点数据 然后到了这里
+        // 又变指定对应的资源(一个资源对应一个链对应一个
+        // NodeSelectorSlot对应一个 map)生成defaultNode 并且连接到 上面的以name 为key的 EntranceNode
         if (node == null) {
             synchronized (this) {
-                // 先添加映射关系
                 node = map.get(context.getName());
                 if (node == null) {
                     node = new DefaultNode(resourceWrapper, null);
@@ -162,15 +169,19 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
                     cacheMap.putAll(map);
                     cacheMap.put(context.getName(), node);
                     map = cacheMap;
-                    // Build invocation tree  把当前节点添加到了上下文的末尾
+                    // Build invocation tree  如果上下文当前对应的资源实体的parent 存在节点 那么就添加到那个节点 否则
+                    // 添加到 entranceNode  (也就是一开始用来初始化context的节点)
                     ((DefaultNode) context.getLastNode()).addChild(node);
                 }
 
             }
         }
 
-        // 更新当前节点
+        // 通过不同的上下文对象资源时 会引导至同一个 NodeSelectorSlot 这时 会在node中定位到同一个 defaultNode
+
+        // 更新当前节点  如果嵌套调用 那么 node 本身就会变成一个链
         context.setCurNode(node);
+        // 当传到下一个 slot时 node已经替换成了与当前资源相关的node  所以叫做NodeSelector么
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 

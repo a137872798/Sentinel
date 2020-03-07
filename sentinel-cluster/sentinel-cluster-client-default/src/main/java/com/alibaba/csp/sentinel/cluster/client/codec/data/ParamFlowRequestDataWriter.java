@@ -33,6 +33,9 @@ import java.util.List;
  */
 public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequestData, ByteBuf> {
 
+    /**
+     * 参数的最大长度
+     */
     private final int maxParamByteSize;
 
     public ParamFlowRequestDataWriter() {
@@ -55,6 +58,7 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         target.writeInt(params.size());
 
         // Serialize parameters with type flag.
+        // 将参数按照 type/value  的方式写入到buffer中
         for (Object param : params) {
             encodeValue(param, target);
         }
@@ -65,17 +69,20 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
      *
      * @param params
      * @return
+     * 检测参数bean 携带的param是否合法
      */
     public List<Object> resolveValidParams(Collection<Object> params) {
         List<Object> validParams = new ArrayList<>();
         int size = 0;
         for (Object param : params) {
+            // 检测类型的长度
             int s = calculateParamTransportSize(param);
             if (s <= 0) {
                 RecordLog.warn("[ParamFlowRequestDataWriter] WARN: Non-primitive type detected in params of "
                         + "cluster parameter flow control, which is not supported: " + param);
                 continue;
             }
+            // 如果超过了指定长度  就不再将剩余参数填充到list中
             if (size + s > maxParamByteSize) {
                 RecordLog.warn("[ParamFlowRequestDataWriter] WARN: params size is too big." +
                         " the configure value is : " + maxParamByteSize + ", the params size is: " + params.size());
@@ -87,6 +94,11 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
         return validParams;
     }
 
+    /**
+     * 将参数按特殊格式写入到buffer中
+     * @param param
+     * @param target
+     */
     private void encodeValue(Object param, ByteBuf target) {
         // Handle primitive type.
         if (param instanceof Integer || int.class.isInstance(param)) {
@@ -125,6 +137,11 @@ public class ParamFlowRequestDataWriter implements EntityWriter<ParamFlowRequest
     }
 
 
+    /**
+     * 计算某个值的 byte长度 这里在类型字段长度已经确定的情况下 又额外保留了一个单位的长度
+     * @param value
+     * @return
+     */
     int calculateParamTransportSize(Object value) {
         if (value == null) {
             return 0;

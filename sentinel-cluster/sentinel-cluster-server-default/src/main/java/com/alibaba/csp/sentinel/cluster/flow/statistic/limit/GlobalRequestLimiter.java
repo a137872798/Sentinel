@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 /**
  * @author Eric Zhao
  * @since 1.4.1
+ * 全局请求限流对象
  */
 public final class GlobalRequestLimiter {
 

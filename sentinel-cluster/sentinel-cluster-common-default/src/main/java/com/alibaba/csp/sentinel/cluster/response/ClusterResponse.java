@@ -23,6 +23,9 @@ package com.alibaba.csp.sentinel.cluster.response;
 public class ClusterResponse<T> implements Response {
 
     private int id;
+    /**
+     * 对应的请求类型
+     */
     private int type;
     /**
      * 本次的结果码

@@ -137,7 +137,6 @@ public interface Node extends OccupySupport, DebugSupport {
      * Get current active thread count.
      *
      * @return current active thread count
-     * 当前线程数量 (应该是针对该资源)   想一下 如果是spring boot 那么客户端每发起一个请求会有一个线程专门处理servlet的逻辑 这个统计的就是那个线程???
      */
     int curThreadNum();
 
